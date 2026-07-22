@@ -19,7 +19,7 @@ export default function RootLayout({
       <head>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
       </head>
-      <body className={`${inter.className} antialiased bg-[#0B0F19] text-[14px] text-white selection:bg-primary/30`}>
+      <body className={`${inter.className} antialiased bg-background text-[14px] text-foreground selection:bg-accent-blue/20`}>
         {children}
       </body>
     </html>

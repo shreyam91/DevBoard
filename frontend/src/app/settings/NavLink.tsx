@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from "@/utils/cn";
-
 import { LucideIcon } from 'lucide-react';
 
 export default function NavLink({ 
@@ -12,13 +11,11 @@ export default function NavLink({
   icon, 
   children,
   exact = false,
-  badgeCount = 0
 }: { 
   href: string, 
   icon: React.ReactNode, 
   children: React.ReactNode,
   exact?: boolean,
-  badgeCount?: number
 }) {
   const pathname = usePathname();
   
@@ -45,15 +42,6 @@ export default function NavLink({
         </span>
         <span>{children}</span>
       </div>
-      
-      {badgeCount > 0 && (
-        <span className={cn(
-          "text-[10px] font-bold px-1.5 py-0.5 rounded leading-none transition-colors",
-          isActive ? "bg-accent-red/10 text-accent-red" : "bg-accent-red text-white"
-        )}>
-          {badgeCount > 99 ? '99+' : badgeCount}
-        </span>
-      )}
     </Link>
   );
 }

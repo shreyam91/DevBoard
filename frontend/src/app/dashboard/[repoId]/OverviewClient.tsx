@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import DecisionCard from '@/components/DecisionCard';
 import DecisionDetailPanel from '@/components/DecisionDetailPanel';
+import { AlertTriangle, FileCode, CheckCircle2 } from 'lucide-react';
 
 import { FullDecision, FullConflict } from '@/components/DecisionDetailPanel';
 
@@ -55,72 +56,101 @@ export default function OverviewClient({ initialDecisions, initialConflicts, ini
   return (
     <>
       <div className="flex relative">
-        <div className="flex-1 max-w-[900px]">
+        <div className="flex-1 max-w-[1000px] mx-auto p-6 md:p-8">
           
           {/* Conflict Banner */}
           {latestConflict && (
-            <div className="mt-[14px] mx-[20px] bg-[#FCEBEB] border border-[#F09595] rounded-[9px] p-[11px] px-[14px] flex items-center justify-between">
+            <div className="mb-8 bg-accent-red/10 border border-accent-red/20 rounded-xl p-4 flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-3">
-                <i className="ti ti-alert-triangle text-[#A32D2D] text-[15px]"></i>
-                <span className="text-[13px] text-[#791F1F]">
-                  PR #{latestConflict.pr_number} conflicts with your <span className="font-medium">&apos;{latestConflict.decision_title}&apos;</span> decision. This needs your attention before merging.
+                <AlertTriangle className="w-5 h-5 text-accent-red" />
+                <span className="text-[14px] text-accent-red">
+                  PR <span className="font-bold">#{latestConflict.pr_number}</span> conflicts with your <span className="font-bold italic">&apos;{latestConflict.decision_title}&apos;</span> decision. This needs your attention.
                 </span>
               </div>
-              <a href={`/dashboard/${repoId}/conflicts`} className="text-[13px] text-[#A32D2D] underline font-medium whitespace-nowrap ml-4 hover:opacity-80">
-                Review &rarr;
+              <a href={`/dashboard/${repoId}/conflicts`} className="text-[13px] text-white bg-accent-red hover:bg-accent-red/90 px-4 py-1.5 rounded-lg font-semibold transition-colors shadow-sm">
+                Review Conflict
               </a>
             </div>
           )}
 
-          <div className="p-5">
-            {/* Metric cards */}
-            <div className="flex gap-4 mb-8">
-              <div className="flex-1 bg-white border border-[rgba(0,0,0,0.1)] rounded-[9px] p-3 px-[14px]">
-                <div className="text-[11px] text-[rgba(0,0,0,0.45)] mb-[5px] uppercase tracking-wider font-medium">Decisions Logged</div>
-                <div className="text-[26px] font-medium leading-none text-neutral-900">{stats.total_decisions}</div>
-                <div className="text-[11px] text-[#0F6E56] mt-[3px] font-medium">+{stats.decisions_this_month} this month</div>
+          {/* Metric cards (Bento box style) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200 group-hover:bg-accent-blue/10 group-hover:text-accent-blue group-hover:border-accent-blue/20 transition-all">
+                  <FileCode className="w-5 h-5 text-slate-500 group-hover:text-accent-blue" />
+                </div>
+                <div className="text-[12px] text-slate-500 uppercase tracking-widest font-bold">Decisions Logged</div>
               </div>
-              
-              <div className="flex-1 bg-white border border-[rgba(0,0,0,0.1)] rounded-[9px] p-3 px-[14px]">
-                <div className="text-[11px] text-[rgba(0,0,0,0.45)] mb-[5px] uppercase tracking-wider font-medium">Active Conflicts</div>
-                <div className="text-[26px] font-medium leading-none text-[#A32D2D]">{stats.unresolved_conflicts}</div>
-                <div className="text-[11px] text-[rgba(0,0,0,0.45)] mt-[3px]">Requires resolution</div>
+              <div className="flex items-end justify-between">
+                <div className="text-[40px] font-bold tracking-tight leading-none text-slate-900">{stats.total_decisions}</div>
+                <div className="text-[13px] text-emerald-600 font-semibold mb-1">+{stats.decisions_this_month} this month</div>
               </div>
-              
-              <div className="flex-1 bg-white border border-[rgba(0,0,0,0.1)] rounded-[9px] p-3 px-[14px]">
-                <div className="text-[11px] text-[rgba(0,0,0,0.45)] mb-[5px] uppercase tracking-wider font-medium">PRs Analyzed</div>
-                <div className="text-[26px] font-medium leading-none text-neutral-900">{stats.prs_analyzed}</div>
-                <div className="text-[11px] text-[#0F6E56] mt-[3px] font-medium">+0 this week</div>
-              </div>
-            </div>
-
-            {/* Decisions List */}
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-[14px] font-medium text-neutral-900">Recent Decisions</h3>
             </div>
             
-            <div className="flex flex-col gap-3">
-              {decisions.map(decision => (
-                <DecisionCard
-                  key={decision.id}
-                  decision={decision}
-                  onClick={() => setSelectedDecisionId(decision.id)}
-                  onConfirm={async () => {
-                    const res = await fetch(`/api/decisions/${decision.id}/confirm`, { method: 'PATCH' });
-                    if (res.ok) {
-                      setDecisions(prev => prev.map(d => d.id === decision.id ? { ...d, confirmed_by_user: true } : d));
-                    }
-                  }}
-                />
-              ))}
-              {decisions.length === 0 && (
-                <div className="py-12 text-center text-[rgba(0,0,0,0.45)] border border-dashed border-[rgba(0,0,0,0.1)] rounded-[9px]">
-                  No decisions logged yet.
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200 group-hover:bg-accent-red/10 group-hover:text-accent-red group-hover:border-accent-red/20 transition-all">
+                  <AlertTriangle className="w-5 h-5 text-slate-500 group-hover:text-accent-red" />
                 </div>
-              )}
+                <div className="text-[12px] text-slate-500 uppercase tracking-widest font-bold">Active Conflicts</div>
+              </div>
+              <div className="flex items-end justify-between">
+                <div className="text-[40px] font-bold tracking-tight leading-none text-slate-900 group-hover:text-accent-red transition-colors">{stats.unresolved_conflicts}</div>
+                <div className="text-[13px] text-slate-500 font-semibold mb-1">Needs attention</div>
+              </div>
             </div>
+            
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-600 group-hover:border-emerald-200 transition-all">
+                  <CheckCircle2 className="w-5 h-5 text-slate-500 group-hover:text-emerald-600" />
+                </div>
+                <div className="text-[12px] text-slate-500 uppercase tracking-widest font-bold">PRs Analyzed</div>
+              </div>
+              <div className="flex items-end justify-between">
+                <div className="text-[40px] font-bold tracking-tight leading-none text-slate-900">{stats.prs_analyzed}</div>
+                <div className="text-[13px] text-emerald-600 font-semibold mb-1">+0 this week</div>
+              </div>
+            </div>
+
           </div>
 
+          {/* Decisions List */}
+          <div className="mb-6 flex items-center justify-between border-b border-slate-200 pb-4">
+            <h3 className="text-[20px] font-bold text-slate-900 tracking-tight">Recent Decisions</h3>
+          </div>
+          
+          <div className="flex flex-col gap-4">
+            {decisions.map(decision => (
+              <DecisionCard
+                key={decision.id}
+                decision={decision}
+                onClick={() => setSelectedDecisionId(decision.id)}
+                onConfirm={async () => {
+                  const res = await fetch(`/api/decisions/${decision.id}/confirm`, { method: 'PATCH' });
+                  if (res.ok) {
+                    setDecisions(prev => prev.map(d => d.id === decision.id ? { ...d, confirmed_by_user: true } : d));
+                  }
+                }}
+              />
+            ))}
+            
+            {decisions.length === 0 && (
+              <div className="py-24 text-center flex flex-col items-center justify-center bg-white border border-slate-200 rounded-2xl shadow-sm">
+                <svg className="w-32 h-32 mb-6 text-slate-300" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M40 70C40 70 60 50 100 50C140 50 160 70 160 70" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M100 50V150" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M70 120L100 150L130 120" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <h4 className="text-[20px] font-bold text-slate-900 tracking-tight mb-2">No decisions logged yet</h4>
+                <p className="text-[14px] text-slate-500 max-w-sm leading-relaxed">
+                  DevBoard is monitoring your pull requests. Once you merge architectural changes, they will appear here.
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Slide in panel overlay */}

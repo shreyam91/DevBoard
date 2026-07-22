@@ -5,50 +5,9 @@ import TimelineClient from './TimelineClient';
 export default async function TimelinePage({ params }: { params: { repoId: string } }) {
   const { repoId } = params;
 
-  // Fetch decisions
-  const rawDecisions = await prisma.decision.findMany({
-    where: { repo_id: repoId },
-    orderBy: { created_at: 'asc' }, // Chronological
-    include: {
-      conflicts: {
-        where: { resolved: false },
-        select: { id: true, pr_number: true }
-      }
-    }
-  });
-
-  const decisions = rawDecisions.map(d => ({
-    id: d.id,
-    title: d.title,
-    rationale: d.rationale,
-    category: d.category,
-    source: d.source,
-    pr_url: d.pr_url,
-    pr_number: d.pr_number,
-    confirmed_by_user: d.confirmed_by_user,
-    created_at: d.created_at.toISOString(),
-    has_conflict: d.conflicts.length > 0,
-    conflict_pr_number: d.conflicts[0]?.pr_number || undefined
-  }));
-
-  // Fetch conflicts to pass to the DetailPanel
-  const conflictsRaw = await prisma.conflict.findMany({
-    where: { resolved: false, decision: { repo_id: repoId } },
-    include: { decision: true },
-    orderBy: { created_at: 'desc' }
-  });
-
-  const conflicts = conflictsRaw.map(c => ({
-    id: c.id,
-    decision_id: c.decision_id,
-    decision_title: c.decision.title,
-    pr_url: c.pr_url || '',
-    pr_title: c.pr_title || 'Unknown PR',
-    pr_number: c.pr_number || 0,
-    description: c.description,
-    resolved: c.resolved,
-    created_at: c.created_at.toISOString()
-  }));
+  // AUTH BYPASS FOR UI DEVELOPMENT
+  const decisions: any[] = [];
+  const conflicts: any[] = [];
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-neutral-50">

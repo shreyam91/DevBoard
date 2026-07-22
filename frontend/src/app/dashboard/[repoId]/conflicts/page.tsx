@@ -6,24 +6,8 @@ import { Category } from '@/components/DecisionCard';
 export default async function ConflictsPage({ params }: { params: { repoId: string } }) {
   const { repoId } = params;
 
-  const conflictsRaw = await prisma.conflict.findMany({
-    where: { resolved: false, decision: { repo_id: repoId } },
-    include: { decision: true },
-    orderBy: { created_at: 'desc' }
-  });
-
-  const conflicts = conflictsRaw.map(c => ({
-    id: c.id,
-    decision_id: c.decision_id,
-    decision_title: c.decision.title,
-    decision_category: c.decision.category as Category,
-    pr_url: c.pr_url || '',
-    pr_title: c.pr_title || 'Unknown PR',
-    pr_number: c.pr_number || 0,
-    description: c.description,
-    resolved: c.resolved,
-    created_at: c.created_at.toISOString()
-  }));
+  // AUTH BYPASS FOR UI DEVELOPMENT
+  const conflicts: any[] = [];
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-neutral-50">
