@@ -9,5 +9,8 @@
   "scripts": {
     "dev": "npm run dev --workspaces",
     "build": "npm run build --workspaces"
+  },
+  "dependencies": {
+    "@google/genai": "^2.13.0"
   }
 }

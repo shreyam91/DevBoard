@@ -1,27 +1,48 @@
-import { createWorker } from '@devboard/shared/src/queue';
+import { createWorker, QUEUES } from '@devboard/shared/src/queue';
 import { processArchaeologyJob } from './archaeologyWorker';
 import { processPrAnalysisJob } from './prAnalysisWorker';
+import { processArchitectureUpdateJob } from './architectureWorker';
+import { processScoreCalculationJob } from './scoreWorker';
 
 console.log('Starting BullMQ workers...');
 
-const backgroundWorker = createWorker(async (job) => {
+// Legacy Jobs Worker
+const jobsWorker = createWorker(QUEUES.DEVBOARD_JOBS, async (job) => {
   if (job.name === 'archaeology') {
     await processArchaeologyJob(job);
-  } else if (job.name === 'pr-analysis') {
+  }
+});
+
+// PR Analysis Worker
+const prAnalysisWorker = createWorker(QUEUES.PR_ANALYSIS, async (job) => {
+  if (job.name === 'pr-analysis') {
     await processPrAnalysisJob(job);
   }
 });
 
-// Configure retries/backoff directly on the worker creation if needed, 
-// though typically it's configured when adding the job. 
-// We rely on the enqueue side to specify { attempts: 3, backoff: { type: 'exponential', delay: 1000 } }
-
-backgroundWorker.on('completed', (job) => {
-  console.log(`Job ${job.id} of type ${job.name} completed successfully.`);
+// Architecture Update Worker
+const architectureUpdateWorker = createWorker(QUEUES.ARCHITECTURE_UPDATE, async (job) => {
+  if (job.name === 'architecture-update') {
+    await processArchitectureUpdateJob(job);
+  }
 });
 
-backgroundWorker.on('failed', (job, err) => {
-  console.error(`Job ${job?.id} of type ${job?.name} failed:`, err);
+// Architecture Score Worker
+const architectureScoreWorker = createWorker(QUEUES.ARCHITECTURE_SCORE, async (job) => {
+  if (job.name === 'architecture-score') {
+    await processScoreCalculationJob(job);
+  }
 });
 
-console.log('Background worker listening on queue: devboard-jobs');
+// Common error handling
+[jobsWorker, prAnalysisWorker, architectureUpdateWorker, architectureScoreWorker].forEach(worker => {
+  worker.on('completed', (job) => {
+    console.log(`Job ${job.id} of type ${job.name} completed successfully.`);
+  });
+
+  worker.on('failed', (job, err) => {
+    console.error(`Job ${job?.id} of type ${job?.name} failed:`, err);
+  });
+});
+
+console.log('Background workers listening on multiple queues');

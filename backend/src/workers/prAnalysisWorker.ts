@@ -80,8 +80,8 @@ export async function processPrAnalysisJob(job: Job) {
   // 4. Claude Analysis
   const systemPrompt = `You are an expert software architect. Analyze the provided Pull Request Diff against the current ARCHITECTURE.md and the list of existing architectural decisions.
 You must return a JSON object with:
-1. "suggestedDecision": If the PR introduces a NEW architectural pattern, library, or structural choice that isn't documented, suggest a new decision (title, rationale, category). Otherwise null.
-2. "conflicts": If the PR explicitly violates an existing decision or the architecture, list them. Each conflict must include "decisionId", "decisionTitle", and "reason".
+1. "newDecisions": If the PR introduces a NEW architectural pattern, library, or structural choice that isn't documented, suggest new decisions. Each must have title, description, rationale, confidence (0-1), affected_files, suggested_markdown.
+2. "conflicts": If the PR explicitly violates an existing decision or the architecture, list them. Each conflict must include "decisionId", "decisionTitle", "reason", "confidence" (0-1), and "severity" ('low'|'medium'|'high').
 
 Category enum: "database", "infra", "api", "architecture", "tooling".`;
 
@@ -100,7 +100,7 @@ ${JSON.stringify(decisions, null, 2)}
 
   const msg = await anthropic.messages.create({
     model: 'claude-3-5-sonnet-20240620',
-    max_tokens: 1500,
+    max_tokens: 2500,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],
     tools: [{
@@ -109,14 +109,20 @@ ${JSON.stringify(decisions, null, 2)}
       input_schema: {
         type: 'object',
         properties: {
-          suggestedDecision: {
-            type: 'object',
-            properties: {
-              title: { type: 'string' },
-              rationale: { type: 'string' },
-              category: { type: 'string', enum: ['database', 'infra', 'api', 'architecture', 'tooling'] }
-            },
-            nullable: true
+          newDecisions: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                title: { type: 'string' },
+                description: { type: 'string' },
+                rationale: { type: 'string' },
+                confidence: { type: 'number' },
+                affected_files: { type: 'array', items: { type: 'string' } },
+                suggested_markdown: { type: 'string' }
+              },
+              required: ['title', 'description', 'rationale', 'confidence', 'affected_files', 'suggested_markdown']
+            }
           },
           conflicts: {
             type: 'array',
@@ -125,13 +131,15 @@ ${JSON.stringify(decisions, null, 2)}
               properties: {
                 decisionId: { type: 'string' },
                 decisionTitle: { type: 'string' },
-                reason: { type: 'string' }
+                reason: { type: 'string' },
+                confidence: { type: 'number' },
+                severity: { type: 'string', enum: ['low', 'medium', 'high'] }
               },
-              required: ['decisionId', 'decisionTitle', 'reason']
+              required: ['decisionId', 'decisionTitle', 'reason', 'confidence', 'severity']
             }
           }
         },
-        required: ['conflicts']
+        required: ['conflicts', 'newDecisions']
       }
     }],
     tool_choice: { type: 'tool', name: 'save_pr_analysis' }
@@ -143,13 +151,13 @@ ${JSON.stringify(decisions, null, 2)}
   }
 
   const result = toolBlock.input as {
-    suggestedDecision?: { title: string; rationale: string; category: string };
-    conflicts?: { decisionId: string; decisionTitle: string; reason: string }[];
+    newDecisions: { title: string; description: string; rationale: string; confidence: number; affected_files: string[]; suggested_markdown: string; }[];
+    conflicts: { decisionId: string; decisionTitle: string; reason: string; confidence: number; severity: string; }[];
   };
-  const { suggestedDecision, conflicts } = result;
+  const { newDecisions, conflicts } = result;
 
   // 5. pgvector Similarity Search as a fallback for conflict detection
-  let vectorConflicts: { decisionId: string; decisionTitle: string; reason: string }[] = [];
+  let vectorConflicts: { decisionId: string; decisionTitle: string; reason: string; confidence: number; severity: string; }[] = [];
   try {
     const prSummaryText = `PR: ${prTitle}\nDiff:\n${diffSummary.substring(0, 1000)}`;
     const embeddingRes = await openai.embeddings.create({
@@ -159,8 +167,6 @@ ${JSON.stringify(decisions, null, 2)}
     });
     const embedding = embeddingRes.data[0].embedding;
 
-    // Use <-> (Euclidean distance) or <=> (Cosine distance). We'll use <=> for cosine.
-    // We want decisions where similarity > 0.85 (which means cosine distance < 0.15).
     const similarDecisions: Array<{ id: string, title: string, distance: number }> = await prisma.$queryRaw`
       SELECT id, title, embedding <=> ${embedding}::vector AS distance
       FROM decisions
@@ -174,7 +180,9 @@ ${JSON.stringify(decisions, null, 2)}
       .map(d => ({
         decisionId: d.id,
         decisionTitle: d.title,
-        reason: 'Flagged by semantic similarity (Cosine Distance: ' + d.distance.toFixed(3) + ')'
+        reason: 'Flagged by semantic similarity (Cosine Distance: ' + d.distance.toFixed(3) + ')',
+        confidence: 0.8,
+        severity: 'medium'
       }));
 
   } catch (error) {
@@ -182,7 +190,7 @@ ${JSON.stringify(decisions, null, 2)}
   }
 
   // Deduplicate conflicts
-  const allConflictsMap = new Map<string, { decisionId: string; decisionTitle: string; reason: string }>();
+  const allConflictsMap = new Map<string, { decisionId: string; decisionTitle: string; reason: string; confidence: number; severity: string; }>();
   
   if (conflicts && Array.isArray(conflicts)) {
     conflicts.forEach((c) => allConflictsMap.set(c.decisionId, c));
@@ -198,50 +206,59 @@ ${JSON.stringify(decisions, null, 2)}
 
   // 6. Persistence
   await prisma.$transaction(async (tx) => {
-    // A) Suggested Decision
-    if (suggestedDecision && suggestedDecision.title) {
-      // Generate embedding for the new decision
-      const embedRes = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: `Title: ${suggestedDecision.title}\nRationale: ${suggestedDecision.rationale}`,
-        encoding_format: 'float',
-      });
-      
-      const newDecisionId = crypto.randomUUID();
-      await tx.$executeRaw`
-        INSERT INTO decisions (id, repo_id, title, rationale, category, source, pr_url, embedding, created_at, confirmed_by_user)
-        VALUES (
-          ${newDecisionId},
-          ${repoId},
-          ${suggestedDecision.title},
-          ${suggestedDecision.rationale},
-          ${suggestedDecision.category}::"Category",
-          'pr'::"Source",
-          ${prUrl},
-          ${embedRes.data[0].embedding}::vector,
-          NOW(),
-          false
-        )
-      `;
+    // A) Suggested Decisions -> Pending Decisions
+    if (newDecisions && Array.isArray(newDecisions)) {
+      for (const nd of newDecisions) {
+        await tx.pendingDecision.create({
+          data: {
+            repo_id: repoId,
+            pr_number: prNumber,
+            title: nd.title,
+            description: nd.description,
+            rationale: nd.rationale,
+            confidence: nd.confidence,
+            affected_files: nd.affected_files,
+            suggested_markdown: nd.suggested_markdown,
+            status: 'pending'
+          }
+        });
+      }
     }
 
     // B) Conflicts
     for (const conflict of finalConflicts) {
-      // Verify decision exists (prevent foreign key errors if Claude hallucinates)
+      // Verify decision exists
       const exists = decisions.find(d => d.id === conflict.decisionId);
       if (exists) {
         await tx.conflict.create({
           data: {
+            repo_id: repoId,
+            pr_number: prNumber,
             decision_id: conflict.decisionId,
             pr_url: prUrl,
             pr_title: prTitle,
             description: conflict.reason,
+            confidence: conflict.confidence,
+            severity: conflict.severity,
+            status: 'open',
             resolved: false,
           }
         });
       }
     }
+    
+    // C) Update AnalysisJob Status
+    if (job.data.jobId) {
+      await tx.analysisJob.update({
+        where: { id: job.data.jobId },
+        data: { status: 'completed' }
+      });
+    }
   });
+
+  // Trigger Score Recalculation
+  const { architectureScoreQueue } = await import('@devboard/shared/src/queue');
+  await architectureScoreQueue.add('architecture-score', { repoId });
 
   console.log(`PR Analysis completed for ${repoFullName} PR #${prNumber}`);
 }
