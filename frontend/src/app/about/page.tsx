@@ -21,14 +21,14 @@ export default function AboutPage() {
       <Background />
       <MarketingNavbar isSignedIn={false} />
       
-      <main className="relative z-10 flex-1 px-6 py-20 md:px-12 max-w-[1000px] mx-auto w-full" ref={containerRef}>
+      <main className="relative z-10 flex-1 px-6 md:px-12 max-w-[1000px] mx-auto w-full" ref={containerRef}>
         
         {/* Hero */}
-        <div className="text-center mb-32 pt-12">
+        <div className="text-center mb-12 pt-12">
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 mb-8 shadow-sm"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 mb-4 shadow-sm"
           >
             <BrainCircuit className="w-4 h-4 text-accent-blue" />
             <span className="text-[12px] font-semibold text-slate-500 uppercase tracking-widest">About DevBoard</span>
@@ -38,7 +38,7 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-[48px] md:text-[64px] font-bold tracking-tight mb-6 text-slate-900 leading-[1.1]"
+            className="text-[48px] md:text-[64px] font-bold tracking-tight mb-4 text-slate-900 leading-[1.1]"
           >
             Building the memory layer <br className="hidden md:block"/>
             for software architecture.
@@ -55,7 +55,7 @@ export default function AboutPage() {
         </div>
 
         {/* The Timeline Journey */}
-        <div className="relative mb-32 pl-8 md:pl-0 max-w-[800px] mx-auto">
+        <div className="relative pl-8 md:pl-0 max-w-[800px] mx-auto">
           {/* Timeline Line */}
           <div className="absolute left-8 md:left-1/2 md:-ml-[1px] top-0 bottom-0 w-[2px] bg-slate-100">
             <motion.div 
@@ -105,9 +105,9 @@ export default function AboutPage() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
-          className="border-t border-slate-200 pt-20 max-w-[800px] mx-auto text-center"
+          className="border-t border-slate-200 pt-0 max-w-[800px] mx-auto text-center"
         >
-          <h2 className="text-[32px] md:text-[40px] font-bold text-slate-900 mb-6 tracking-tight">Our Future Vision</h2>
+          <h2 className="text-[32px] md:text-[40px] font-bold text-slate-900 mb-2 tracking-tight">Our Future Vision</h2>
           <p className="text-[18px] text-slate-600 leading-[1.8] mb-12">
             Every software team in the world wastes countless hours repeating the same architectural debates. Our vision is a future where knowledge is persistent, pull requests are automatically validated against design intent, and engineers can focus on building features rather than deciphering legacy code.
           </p>

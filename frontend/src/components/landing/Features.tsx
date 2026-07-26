@@ -6,11 +6,11 @@ import { Annotation } from "./Doodles";
 
 export function SolutionFeatures() {
   return (
-    <section className="relative py-32 overflow-hidden border-b border-slate-200">
+    <section className="relative py-12 overflow-hidden border-b border-slate-200">
       <div className="max-w-[1200px] mx-auto px-6 md:px-12">
         
         {/* Layout 1: Git Node Tree (Repo Archaeology) */}
-        <div className="grid md:grid-cols-[1fr_1fr] gap-16 mb-40 items-center">
+        <div className="grid md:grid-cols-[1fr_1fr] gap-16 mb-10 items-center">
           <div>
             <h3 className="text-[28px] font-semibold text-slate-900 mb-4 flex items-center gap-3">
               <Search className="w-6 h-6 text-accent-blue" />
@@ -57,7 +57,7 @@ export function SolutionFeatures() {
         </div>
 
         {/* Layout 2: Conflict Detection (PR Branching) */}
-        <div className="grid md:grid-cols-[1fr_1fr] gap-16 items-center mb-40">
+        <div className="grid md:grid-cols-[1fr_1fr] gap-16 items-center mb-10">
           <div className="order-2 md:order-1 relative h-[300px] flex items-center justify-center bg-slate-50 border border-slate-200 rounded-2xl p-6 overflow-hidden">
             <svg className="absolute w-full h-full inset-0 pointer-events-none" viewBox="0 0 400 300">
               <motion.path 
@@ -71,7 +71,7 @@ export function SolutionFeatures() {
               />
               <motion.path 
                 d="M 150,250 C 150,150 250,150 250,150" 
-                fill="none" stroke="#dc2626" strokeWidth="3" strokeDasharray="5,5"
+                fill="none" stroke="#dc2626" strokeWidth="3"
                 strokeDasharray="200"
                 initial={{ strokeDashoffset: 200 }}
                 whileInView={{ strokeDashoffset: 0 }}
@@ -109,7 +109,7 @@ export function SolutionFeatures() {
         </div>
 
         {/* Layout 3: Living Documentation (Notebook style) */}
-        <div className="flex flex-col items-center mb-10 text-center relative max-w-4xl mx-auto">
+        <div className="flex flex-col items-center mb-4 text-center relative max-w-4xl mx-auto">
           <h3 className="text-[28px] font-semibold text-slate-900 mb-4 flex items-center justify-center gap-3">
             <FileCode2 className="w-6 h-6 text-accent-green" />
             AI Generated ARCHITECTURE.md

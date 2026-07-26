@@ -5,7 +5,7 @@ import { Annotation, HandDrawnCircle } from "./Doodles";
 
 export function Problem() {
   return (
-    <section className="relative px-6 py-32 md:px-12 max-w-[1000px] mx-auto border-b border-slate-200">
+    <section className="relative px-6 md:px-12 max-w-[1000px] mx-auto border-b border-slate-200">
       <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-16 items-start">
         
         {/* Left: Section Header */}

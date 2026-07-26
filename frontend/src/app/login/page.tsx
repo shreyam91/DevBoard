@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Background } from "@/components/landing/Background";
 import MarketingNavbar from "@/components/MarketingNavbar";
+import { signIn } from "@/auth";
 
 export default function LoginPage() {
   return (
@@ -20,19 +21,21 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <Link
-            href="/dashboard"
-            className="group flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-[14px] font-medium text-slate-900 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 hover:shadow"
+          <form
+            action={async () => {
+              "use server";
+              await signIn("github", { redirectTo: "/dashboard" });
+            }}
+            className="w-full"
           >
-            <GithubIcon className="w-5 h-5 text-slate-700 group-hover:text-black transition-colors" />
-            Continue with GitHub
-          </Link>
-          
-          <div className="mt-4 flex items-center justify-center">
-            <span className="text-[11px] font-bold tracking-widest text-accent-red uppercase bg-accent-red/10 px-2 py-1 rounded text-center">
-              Login Disabled for UI Dev
-            </span>
-          </div>
+            <button
+              type="submit"
+              className="group flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-[14px] font-medium text-slate-900 shadow-sm transition-all hover:bg-slate-50 hover:border-slate-300 hover:shadow"
+            >
+              <GithubIcon className="w-5 h-5 text-slate-700 group-hover:text-black transition-colors" />
+              Continue with GitHub
+            </button>
+          </form>
 
           <p className="mt-8 text-center text-[12px] text-slate-400 leading-relaxed">
             By signing in, you agree to our <Link href="/terms" className="underline hover:text-slate-600 transition-colors">Terms of Service</Link> and <Link href="/privacy" className="underline hover:text-slate-600 transition-colors">Privacy Policy</Link>.

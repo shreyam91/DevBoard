@@ -1,3 +1,11 @@
+import fs from 'fs';
+import path from 'path';
+import { exec } from 'child_process';
+import util from 'util';
+import crypto from 'crypto';
+
+const execAsync = util.promisify(exec);
+
 export type ArchaeologyContext = {
   detected_languages: Record<string, number>;
   detected_frameworks: Record<string, string>;
@@ -6,8 +14,10 @@ export type ArchaeologyContext = {
     first_commit_date: string | null;
     last_commit_date: string | null;
     total_commits_sample: number;
+    recent_messages: string[];
   };
   readme_summary: string;
+  folder_structure: string;
 };
 
 async function fetchGitHub(url: string, token: string) {
@@ -24,61 +34,84 @@ async function fetchGitHub(url: string, token: string) {
   return res.json();
 }
 
-async function fetchFileContent(fullName: string, path: string, token: string): Promise<string | null> {
-  const data = await fetchGitHub(`https://api.github.com/repos/${fullName}/contents/${path}`, token);
-  if (!data || !data.content) return null;
-  return Buffer.from(data.content, 'base64').toString('utf-8');
-}
-
 export async function extractArchaeologyContext(fullName: string, token: string): Promise<ArchaeologyContext> {
-  // 1. Languages
-  const languages = await fetchGitHub(`https://api.github.com/repos/${fullName}/languages`, token) || {};
+  const cloneDir = path.join('/tmp', `repo-${crypto.randomUUID()}`);
+  
+  try {
+    // 1. Shallow clone the repository
+    const authUrl = `https://oauth2:${token}@github.com/${fullName}.git`;
+    console.log(`Cloning ${fullName} to ${cloneDir}...`);
+    await execAsync(`git clone --depth 50 ${authUrl} ${cloneDir}`);
 
-  // 2. Commits
-  const commits = await fetchGitHub(`https://api.github.com/repos/${fullName}/commits?per_page=100`, token) || [];
-  let first_commit_date = null;
-  let last_commit_date = null;
-  if (commits.length > 0) {
-    last_commit_date = commits[0].commit.author.date;
-    first_commit_date = commits[commits.length - 1].commit.author.date;
-  }
+    // 2. Languages via API (faster than local analysis)
+    const languages = await fetchGitHub(`https://api.github.com/repos/${fullName}/languages`, token) || {};
 
-  // 3. package.json for frameworks
-  const packageJsonStr = await fetchFileContent(fullName, 'package.json', token);
-  let detected_frameworks = {};
-  if (packageJsonStr) {
-    try {
-      const pkg = JSON.parse(packageJsonStr);
-      detected_frameworks = { ...pkg.dependencies, ...pkg.devDependencies };
-    } catch {
-      console.warn('Failed to parse package.json');
+    // 3. Git History
+    const { stdout: gitLog } = await execAsync(`git log --pretty=format:"%ad|%s" --date=iso`, { cwd: cloneDir });
+    const logLines = gitLog.split('\n').filter(Boolean);
+    
+    let first_commit_date = null;
+    let last_commit_date = null;
+    const recent_messages: string[] = [];
+
+    if (logLines.length > 0) {
+      last_commit_date = logLines[0].split('|')[0];
+      first_commit_date = logLines[logLines.length - 1].split('|')[0];
+      recent_messages.push(...logLines.slice(0, 10).map(l => l.split('|')[1]));
+    }
+
+    // 4. Frameworks (package.json)
+    let detected_frameworks = {};
+    const pkgPath = path.join(cloneDir, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      try {
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+        detected_frameworks = { ...pkg.dependencies, ...pkg.devDependencies };
+      } catch {}
+    }
+
+    // 5. Infra and Config Files
+    const detected_infra: string[] = [];
+    const checkFiles = [
+      'Dockerfile', 'docker-compose.yml', 'tsconfig.json', 
+      'next.config.js', 'next.config.mjs', 'prisma/schema.prisma',
+      'schema.prisma', '.github/workflows'
+    ];
+    
+    for (const file of checkFiles) {
+      if (fs.existsSync(path.join(cloneDir, file))) {
+        detected_infra.push(file);
+      }
+    }
+
+    // 6. Folder structure
+    const { stdout: treeOut } = await execAsync(`find . -maxdepth 2 -type d | grep -v ".git" | head -n 20`, { cwd: cloneDir }).catch(() => ({ stdout: '' }));
+    
+    // 7. README
+    let readme_summary = '';
+    const readmePath = path.join(cloneDir, 'README.md');
+    if (fs.existsSync(readmePath)) {
+      const content = fs.readFileSync(readmePath, 'utf-8');
+      readme_summary = content.substring(0, 1000);
+    }
+
+    return {
+      detected_languages: languages,
+      detected_frameworks,
+      detected_infra,
+      commit_history_summary: {
+        first_commit_date,
+        last_commit_date,
+        total_commits_sample: logLines.length,
+        recent_messages
+      },
+      readme_summary,
+      folder_structure: treeOut
+    };
+  } finally {
+    // Cleanup
+    if (fs.existsSync(cloneDir)) {
+      await execAsync(`rm -rf ${cloneDir}`);
     }
   }
-
-  // 4. Infra files
-  const detected_infra: string[] = [];
-  const dockerfile = await fetchFileContent(fullName, 'Dockerfile', token);
-  if (dockerfile) detected_infra.push('Dockerfile');
-  
-  const dockerCompose = await fetchFileContent(fullName, 'docker-compose.yml', token);
-  if (dockerCompose) detected_infra.push('docker-compose.yml');
-
-  // 5. README
-  let readme_summary = '';
-  const readmeStr = await fetchFileContent(fullName, 'README.md', token);
-  if (readmeStr) {
-    readme_summary = readmeStr.substring(0, 500);
-  }
-
-  return {
-    detected_languages: languages,
-    detected_frameworks,
-    detected_infra,
-    commit_history_summary: {
-      first_commit_date,
-      last_commit_date,
-      total_commits_sample: commits.length,
-    },
-    readme_summary,
-  };
 }

@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import DecisionCard from '@/components/DecisionCard';
 import DecisionDetailPanel from '@/components/DecisionDetailPanel';
 import { AlertTriangle, FileCode, CheckCircle2 } from 'lucide-react';
-
 import { FullDecision, FullConflict } from '@/components/DecisionDetailPanel';
+import ScoreWidget from '@/components/ScoreWidget';
 
 interface Props {
   initialDecisions: FullDecision[];
@@ -13,7 +13,7 @@ interface Props {
   initialStats: {
     total_decisions: number;
     unresolved_conflicts: number;
-    prs_analyzed: number;
+    pending_decisions: number;
     decisions_this_month: number;
   };
   repoId: string;
@@ -31,9 +31,9 @@ export default function OverviewClient({ initialDecisions, initialConflicts, ini
       try {
         const res = await fetch(`/api/repos/${repoId}/pending`);
         if (res.ok) {
-          const { active_conflicts } = await res.json();
+          const { active_conflicts, unconfirmed_decisions } = await res.json();
           // If there's a discrepancy, trigger full refresh of overview
-          if (active_conflicts !== stats.unresolved_conflicts) {
+          if (active_conflicts !== stats.unresolved_conflicts || unconfirmed_decisions !== stats.pending_decisions) {
             const overviewRes = await fetch(`/api/repos/${repoId}/overview`);
             if (overviewRes.ok) {
               const data = await overviewRes.json();
@@ -48,7 +48,7 @@ export default function OverviewClient({ initialDecisions, initialConflicts, ini
       }
     }, 30000);
     return () => clearInterval(interval);
-  }, [repoId, stats.unresolved_conflicts]);
+  }, [repoId, stats.unresolved_conflicts, stats.pending_decisions]);
 
   const latestConflict = conflicts[0];
   const selectedDecision = decisions.find(d => d.id === selectedDecisionId) || null;
@@ -58,6 +58,8 @@ export default function OverviewClient({ initialDecisions, initialConflicts, ini
       <div className="flex relative">
         <div className="flex-1 max-w-[1000px] mx-auto p-6 md:p-8">
           
+          <ScoreWidget repoId={repoId} />
+
           {/* Conflict Banner */}
           {latestConflict && (
             <div className="mb-8 bg-accent-red/10 border border-accent-red/20 rounded-xl p-4 flex items-center justify-between shadow-sm">
@@ -102,16 +104,16 @@ export default function OverviewClient({ initialDecisions, initialConflicts, ini
               </div>
             </div>
             
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group cursor-pointer" onClick={() => window.location.href = `/dashboard/${repoId}/pending`}>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-600 group-hover:border-emerald-200 transition-all">
-                  <CheckCircle2 className="w-5 h-5 text-slate-500 group-hover:text-emerald-600" />
+                <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200 group-hover:bg-amber-50 group-hover:text-amber-600 group-hover:border-amber-200 transition-all">
+                  <CheckCircle2 className="w-5 h-5 text-slate-500 group-hover:text-amber-600" />
                 </div>
-                <div className="text-[12px] text-slate-500 uppercase tracking-widest font-bold">PRs Analyzed</div>
+                <div className="text-[12px] text-slate-500 uppercase tracking-widest font-bold">Pending Decisions</div>
               </div>
               <div className="flex items-end justify-between">
-                <div className="text-[40px] font-bold tracking-tight leading-none text-slate-900">{stats.prs_analyzed}</div>
-                <div className="text-[13px] text-emerald-600 font-semibold mb-1">+0 this week</div>
+                <div className="text-[40px] font-bold tracking-tight leading-none text-slate-900 group-hover:text-amber-600 transition-colors">{stats.pending_decisions}</div>
+                <div className="text-[13px] text-slate-500 font-semibold mb-1">Action needed</div>
               </div>
             </div>
 

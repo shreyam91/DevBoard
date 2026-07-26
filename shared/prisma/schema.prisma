@@ -9,16 +9,62 @@ datasource db {
 }
 
 model User {
-  id                  String   @id @default(cuid())
-  github_id           String   @unique
-  email               String?  @unique
+  id                  String    @id @default(cuid())
   name                String?
+  email               String?   @unique
+  emailVerified       DateTime? @map("email_verified")
+  image               String?
+  
+  // Legacy / custom fields
+  github_id           String?   @unique
   avatar_url          String?
   github_access_token String?
-  created_at          DateTime @default(now())
+  created_at          DateTime  @default(now())
+
   repos               Repo[]
+  accounts            Account[]
+  sessions            Session[]
 
   @@map("users")
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String  @map("user_id")
+  type               String
+  provider           String
+  providerAccountId  String  @map("provider_account_id")
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
 model Repo {
@@ -28,15 +74,80 @@ model Repo {
   github_repo_id     String   @unique
   name               String
   full_name          String
+  owner              String   @default("")
+  default_branch     String   @default("main")
+  last_commit_sha    String?
+  last_commit_message String?
+  last_activity_at   DateTime?
+  commit_count       Int      @default(0)
   is_new_repo        Boolean  @default(false)
   connected_at       DateTime @default(now())
   archaeology_done   Boolean  @default(false)
   archaeology_failed Boolean  @default(false)
+  initialization_status String @default("pending") // pending, in_progress, review, completed, failed
 
-  decisions          Decision[]
-  architecture_files ArchitectureFile[]
+  // Health Check Fields
+  health_status         String?   // 'checking', 'ready', 'failed'
+  health_last_checked   DateTime?
+  health_webhook_status String?   // 'connected', 'disconnected', 'needs_repair'
+  health_framework      String?
+  health_language       String?
+  health_repo_size      Int?
+  health_commit_count   Int?
+  health_score          Int?
+  health_details        Json?
+
+  decisions             Decision[]
+  architecture_versions ArchitectureVersion[]
+  metadata              RepositoryMetadata?
+  questionnaire         Questionnaire?
+  initialization_jobs   InitializationJob[]
+  pull_requests         PullRequest[]
+  analysis_jobs         AnalysisJob[]
+  pending_decisions     PendingDecision[]
+  conflicts             Conflict[]
+  architecture_scores   ArchitectureScore[]
 
   @@map("repos")
+}
+
+model InitializationJob {
+  id          String   @id @default(cuid())
+  repo_id     String
+  repo        Repo     @relation(fields: [repo_id], references: [id], onDelete: Cascade)
+  status      String   @default("queued") // queued, processing, review_pending, completed, failed
+  type        String   // archaeology, questionnaire
+  draft_markdown String? @db.Text
+  draft_decisions Json?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@map("initialization_jobs")
+}
+
+model RepositoryMetadata {
+  id                 String    @id @default(cuid())
+  repo_id            String    @unique
+  repo               Repo      @relation(fields: [repo_id], references: [id], onDelete: Cascade)
+  detected_languages Json?
+  detected_frameworks Json?
+  detected_infra     Json?
+  first_commit_date  DateTime?
+  last_commit_date   DateTime?
+  total_commits      Int       @default(0)
+  readme_summary     String?   @db.Text
+
+  @@map("repository_metadata")
+}
+
+model Questionnaire {
+  id         String   @id @default(cuid())
+  repo_id    String   @unique
+  repo       Repo     @relation(fields: [repo_id], references: [id], onDelete: Cascade)
+  answers    Json
+  updated_at DateTime @updatedAt
+
+  @@map("questionnaires")
 }
 
 enum Category {
@@ -55,43 +166,133 @@ enum Source {
 }
 
 model Decision {
-  id                String                       @id @default(cuid())
+  id                String             @id @default(cuid())
   repo_id           String
-  repo              Repo                         @relation(fields: [repo_id], references: [id])
+  repo              Repo               @relation(fields: [repo_id], references: [id], onDelete: Cascade)
   title             String
   rationale         String
   category          Category
-  embedding         Unsupported("vector(1536)")?
   pr_url            String?
-  confirmed_by_user Boolean                      @default(false)
+  pr_number         Int?
+  confirmed_by_user Boolean            @default(false)
+  confidence        Float?
+  approved_by       String?
   source            Source
-  created_at        DateTime                     @default(now())
+  created_at        DateTime           @default(now())
 
-  conflicts Conflict[]
+  conflicts         Conflict[]
+  embedding         DecisionEmbedding?
 
   @@map("decisions")
 }
 
+model DecisionEmbedding {
+  id          String   @id @default(cuid())
+  decision_id String   @unique
+  decision    Decision @relation(fields: [decision_id], references: [id], onDelete: Cascade)
+  vector      Unsupported("vector(1536)")
+
+  @@map("decision_embeddings")
+}
+
 model Conflict {
   id          String   @id @default(cuid())
+  repo_id     String
+  repo        Repo     @relation(fields: [repo_id], references: [id], onDelete: Cascade)
   decision_id String
-  decision    Decision @relation(fields: [decision_id], references: [id])
+  decision    Decision @relation(fields: [decision_id], references: [id], onDelete: Cascade)
+  pr_number   Int
   pr_url      String?
   pr_title    String?
-  description String
+  description String   @db.Text
+  confidence  Float    @default(0.0)
+  severity    String   @default("medium") // low, medium, high
+  status      String   @default("open") // open, resolved, overridden
   resolved    Boolean  @default(false)
   created_at  DateTime @default(now())
 
   @@map("conflicts")
 }
 
-model ArchitectureFile {
+model WebhookEvent {
+  id         String   @id @default(cuid())
+  repo_id    String?
+  payload    Json
+  processed  Boolean  @default(false)
+  created_at DateTime @default(now())
+
+  @@map("webhook_events")
+}
+
+model PullRequest {
+  id         String   @id @default(cuid())
+  repo_id    String
+  repo       Repo     @relation(fields: [repo_id], references: [id], onDelete: Cascade)
+  pr_number  Int
+  title      String
+  description String? @db.Text
+  url        String
+  author     String
+  merged_at  DateTime
+
+  @@map("pull_requests")
+}
+
+model AnalysisJob {
+  id         String   @id @default(cuid())
+  repo_id    String
+  repo       Repo     @relation(fields: [repo_id], references: [id], onDelete: Cascade)
+  pr_number  Int
+  status     String   @default("queued") // queued, processing, completed, failed
+  error      String?  @db.Text
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("analysis_jobs")
+}
+
+model PendingDecision {
+  id                String   @id @default(cuid())
+  repo_id           String
+  repo              Repo     @relation(fields: [repo_id], references: [id], onDelete: Cascade)
+  pr_number         Int
+  title             String
+  description       String   @db.Text
+  rationale         String   @db.Text
+  confidence        Float
+  affected_files    Json?
+  suggested_markdown String? @db.Text
+  status            String   @default("pending") // pending, approved, discarded
+  created_at        DateTime @default(now())
+  
+  @@map("pending_decisions")
+}
+
+model ArchitectureVersion {
   id           String   @id @default(cuid())
   repo_id      String
-  repo         Repo     @relation(fields: [repo_id], references: [id])
+  repo         Repo     @relation(fields: [repo_id], references: [id], onDelete: Cascade)
   content      String   @db.Text
   committed_at DateTime
   version      Int
 
-  @@map("architecture_files")
+  @@map("architecture_versions")
+}
+
+model ArchitectureScore {
+  id                      String   @id @default(cuid())
+  repo_id                 String
+  repo                    Repo     @relation(fields: [repo_id], references: [id], onDelete: Cascade)
+  
+  score                   Int
+  decision_compliance     Float
+  documentation_freshness Float
+  decision_coverage       Float
+  open_conflicts_score    Float
+  ai_confidence           Float
+  
+  insights                Json?
+  calculated_at           DateTime @default(now())
+
+  @@map("architecture_scores")
 }

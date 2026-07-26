@@ -22,14 +22,14 @@ export default function ContactPage() {
       <Background />
       <MarketingNavbar isSignedIn={false} />
       
-      <main className="relative z-10 flex-1 px-6 py-20 md:px-12 max-w-[1200px] mx-auto w-full grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-16 lg:gap-24 items-start">
+      <main className="relative z-10 flex-1 px-6 py-6 md:px-12 max-w-[1200px] mx-auto w-full grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-16 lg:gap-24 items-start">
         
         {/* Left Side: Info */}
-        <div className="flex flex-col pt-12">
+        <div className="flex flex-col">
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 mb-8 shadow-sm self-start"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 mb-4 shadow-sm self-start"
           >
             <MessageSquare className="w-4 h-4 text-accent-blue" />
             <span className="text-[12px] font-semibold text-slate-500 uppercase tracking-widest">Contact Us</span>
@@ -39,7 +39,7 @@ export default function ContactPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-[48px] md:text-[64px] font-bold tracking-tight mb-6 text-slate-900 leading-[1.1]"
+            className="text-[48px] md:text-[64px] font-bold tracking-tight mb-2 text-slate-900 leading-[1.1]"
           >
             Let's talk <br/> architecture.
           </motion.h1>
@@ -48,7 +48,7 @@ export default function ContactPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-[18px] text-slate-600 leading-relaxed mb-12 max-w-[400px]"
+            className="text-[18px] text-slate-600 leading-relaxed mb-4 max-w-[400px]"
           >
             Whether you have a question about our API, need enterprise support, or just want to share feedback—our engineering team is ready to help.
           </motion.p>
@@ -70,10 +70,10 @@ export default function ContactPage() {
                   <GithubIcon className="w-5 h-5 text-slate-400 group-hover:text-slate-900 transition-colors" />
                   GitHub Repository
                 </a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-3 text-[15px] font-medium text-slate-600 hover:text-blue-600 transition-colors">
+                {/* <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-3 text-[15px] font-medium text-slate-600 hover:text-blue-600 transition-colors">
                   <LinkedinIcon className="w-5 h-5 text-slate-400 group-hover:text-blue-600 transition-colors" />
                   LinkedIn
-                </a>
+                </a> */}
               </div>
             </div>
 
@@ -122,7 +122,7 @@ export default function ContactPage() {
               <label className="text-[13px] font-semibold text-slate-700">Full Name</label>
               <input 
                 type="text" 
-                placeholder="Jane Doe"
+                placeholder="Shaurya "
                 required
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-colors focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-100" 
               />
@@ -132,7 +132,7 @@ export default function ContactPage() {
               <label className="text-[13px] font-semibold text-slate-700">Email Address</label>
               <input 
                 type="email" 
-                placeholder="jane@company.com"
+                placeholder="shaurya@company.com"
                 required
                 className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-colors focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-100" 
               />

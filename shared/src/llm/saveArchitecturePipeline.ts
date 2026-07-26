@@ -1,7 +1,7 @@
 import { prisma } from '../prisma';
 import { generateArchitecture, ArchitectureContext } from './generateArchitecture';
 import { commitFile } from '../github/commitFile';
-import OpenAI from 'openai';
+import { GoogleGenAI } from '@google/genai';
 
 export async function executeArchitecturePipeline(
   repoId: string,
@@ -9,7 +9,7 @@ export async function executeArchitecturePipeline(
   githubAccessToken: string,
   context: ArchitectureContext
 ) {
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
   // 1. Generate architecture using LLM
   const llmResult = await generateArchitecture(context);
@@ -18,14 +18,13 @@ export async function executeArchitecturePipeline(
   const decisionsWithEmbeddings = await Promise.all(
     llmResult.decisions.map(async (decision) => {
       const textToEmbed = `Title: ${decision.title}\nRationale: ${decision.rationale}`;
-      const embeddingRes = await openai.embeddings.create({
-        model: 'text-embedding-3-small',
-        input: textToEmbed,
-        encoding_format: 'float',
+      const embeddingRes = await ai.models.embedContent({
+        model: 'text-embedding-004',
+        contents: textToEmbed,
       });
       return {
         ...decision,
-        embedding: embeddingRes.data[0].embedding,
+        embedding: embeddingRes.embeddings[0].values,
       };
     })
   );
@@ -40,15 +39,15 @@ export async function executeArchitecturePipeline(
   );
 
   // 4. Determine version and save to DB
-  const lastFile = await prisma.architectureFile.findFirst({
+  const lastFile = await prisma.architectureVersion.findFirst({
     where: { repo_id: repoId },
     orderBy: { version: 'desc' },
   });
   const nextVersion = (lastFile?.version || 0) + 1;
 
   await prisma.$transaction(async (tx) => {
-    // Insert ArchitectureFile
-    await tx.architectureFile.create({
+    // Insert ArchitectureVersion
+    await tx.architectureVersion.create({
       data: {
         repo_id: repoId,
         content: llmResult.markdownContent,

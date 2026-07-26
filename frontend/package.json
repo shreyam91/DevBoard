@@ -12,8 +12,10 @@
     "@auth/prisma-adapter": "^2.11.2",
     "@devboard/shared": "*",
     "@prisma/adapter-pg": "^7.8.0",
+    "@tailwindcss/typography": "^0.5.20",
     "clsx": "^2.1.1",
     "d3": "^7.9.0",
+    "date-fns": "^4.4.0",
     "framer-motion": "^12.42.2",
     "lucide-react": "^1.25.0",
     "next": "14.2.35",
@@ -21,6 +23,9 @@
     "pg": "^8.22.0",
     "react": "^18",
     "react-dom": "^18",
+    "react-hot-toast": "^2.6.0",
+    "react-markdown": "^10.1.0",
+    "recharts": "^3.10.0",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {

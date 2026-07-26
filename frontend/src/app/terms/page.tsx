@@ -66,7 +66,7 @@ export default function TermsOfServicePage() {
       <Background />
       <MarketingNavbar isSignedIn={false} />
       
-      <main className="relative z-10 flex-1 px-6 py-20 md:px-12 max-w-[1200px] mx-auto w-full grid grid-cols-1 md:grid-cols-[250px_1fr] gap-16 items-start">
+      <main className="relative z-10 flex-1 px-6 py-10 md:px-12 max-w-[1200px] mx-auto w-full grid grid-cols-1 md:grid-cols-[250px_1fr] gap-16 items-start">
         
         {/* Left: Sticky TOC (Desktop) */}
         <aside className="hidden md:flex flex-col sticky top-32">
@@ -90,7 +90,7 @@ export default function TermsOfServicePage() {
         {/* Right: Content */}
         <div className="flex flex-col">
           
-          <div className="mb-16 border-b border-slate-200 pb-12">
+          <div className=" border-b border-slate-200 pb-4">
             <motion.div 
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -104,7 +104,7 @@ export default function TermsOfServicePage() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-[40px] md:text-[56px] font-bold tracking-tight mb-6 text-slate-900 leading-[1.1]"
+              className="text-[40px] md:text-[56px] font-bold tracking-tight mb-2 text-slate-900 leading-[1.1]"
             >
               Terms of Service
             </motion.h1>
@@ -126,24 +126,24 @@ export default function TermsOfServicePage() {
             transition={{ delay: 0.3 }}
             className="flex flex-col gap-12 text-[15px] text-slate-600 leading-relaxed"
           >
-            <section id="acceptance" className="scroll-mt-32">
-              <h2 className="text-[24px] font-semibold text-slate-900 mb-4">Acceptance</h2>
+            <section id="acceptance" className="scroll-mt-12">
+              <h2 className="text-[24px] font-semibold text-slate-900 mb-2">Acceptance</h2>
               <p>By accessing and using DevBoard, you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you must not use our service. These terms apply to all visitors, users, and others who access or use DevBoard.</p>
             </section>
 
-            <section id="accounts" className="scroll-mt-32">
-              <h2 className="text-[24px] font-semibold text-slate-900 mb-4">Accounts</h2>
+            <section id="accounts" className="scroll-mt-12">
+              <h2 className="text-[24px] font-semibold text-slate-900 mb-2">Accounts</h2>
               <p className="mb-4">When you create an account with us, you must provide accurate, complete, and current information at all times. Failure to do so constitutes a breach of the Terms, which may result in immediate termination of your account.</p>
               <p>You are responsible for safeguarding the password and GitHub OAuth permissions that you use to access the service. You agree not to disclose your password to any third party.</p>
             </section>
 
             <section id="github" className="scroll-mt-32">
-              <h2 className="text-[24px] font-semibold text-slate-900 mb-4">GitHub Integration</h2>
+              <h2 className="text-[24px] font-semibold text-slate-900 mb-2">GitHub Integration</h2>
               <p>DevBoard requires integration with your GitHub account to function. By connecting your GitHub account, you grant us permission to read your repositories and pull requests for the sole purpose of architectural analysis and conflict detection. We do not acquire any ownership rights over your source code.</p>
             </section>
 
             <section id="acceptable-use" className="scroll-mt-32">
-              <h2 className="text-[24px] font-semibold text-slate-900 mb-4">Acceptable Use</h2>
+              <h2 className="text-[24px] font-semibold text-slate-900 mb-2">Acceptable Use</h2>
               <p>You agree not to use DevBoard to:</p>
               <ul className="list-disc pl-6 mt-4 space-y-2">
                 <li>Reverse engineer, decompile, or disassemble any aspect of the service.</li>
@@ -154,20 +154,20 @@ export default function TermsOfServicePage() {
             </section>
 
             <section id="intellectual-property" className="scroll-mt-32">
-              <h2 className="text-[24px] font-semibold text-slate-900 mb-4">Intellectual Property</h2>
+              <h2 className="text-[24px] font-semibold text-slate-900 mb-2">Intellectual Property</h2>
               <p>The DevBoard service, including its original content, features, functionality, and AI models, are owned by DevBoard Inc. and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.</p>
               <p className="mt-4">Your architecture, source code, and generated Living Documentation remain your exclusive intellectual property.</p>
             </section>
 
             <section id="ai-features" className="scroll-mt-32">
-              <h2 className="text-[24px] font-semibold text-slate-900 mb-4">AI Features</h2>
+              <h2 className="text-[24px] font-semibold text-slate-900 mb-2">AI Features</h2>
               <p>DevBoard uses artificial intelligence to generate architectural insights. While we strive for accuracy, AI-generated documentation and conflict detection are provided "as is". You are responsible for reviewing and verifying any architectural decisions generated by the platform before relying on them for critical engineering workflows.</p>
             </section>
 
             <section id="liability" className="scroll-mt-32">
-              <h2 className="text-[24px] font-semibold text-slate-900 mb-4">Limitation of Liability</h2>
+              <h2 className="text-[24px] font-semibold text-slate-900 mb-2">Limitation of Liability</h2>
               
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mt-4 flex flex-col md:flex-row gap-4 items-start">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mt-2 flex flex-col md:flex-row gap-4 items-start">
                 <AlertTriangle className="w-6 h-6 text-amber-500 flex-shrink-0" />
                 <div className="text-[14px] text-amber-900">
                   <strong className="block mb-2 font-semibold">Important Notice</strong>
@@ -177,7 +177,7 @@ export default function TermsOfServicePage() {
             </section>
 
             <section id="termination" className="scroll-mt-32">
-              <h2 className="text-[24px] font-semibold text-slate-900 mb-4">Termination</h2>
+              <h2 className="text-[24px] font-semibold text-slate-900 mb-2">Termination</h2>
               <p>We may terminate or suspend your account immediately, without prior notice or liability, for any reason whatsoever, including without limitation if you breach the Terms. Upon termination, your right to use the Service will immediately cease, and your data will be queued for deletion according to our Privacy Policy.</p>
             </section>
             

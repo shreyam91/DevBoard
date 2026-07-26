@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingsClient from './SettingsClient';
 
 export default function SettingsPage({ params }: { params: { repoId: string } }) {
   const { repoId } = params;
@@ -68,36 +69,7 @@ export default function SettingsPage({ params }: { params: { repoId: string } })
             <h3 className="text-[18px] font-bold text-accent-red tracking-tight mb-1">Danger Zone</h3>
             <p className="text-[13px] text-slate-500 mb-6">Irreversible actions that affect this repository.</p>
 
-            <div className="bg-white border border-accent-red/30 shadow-sm rounded-2xl overflow-hidden">
-              
-              <div className="p-6 flex items-center justify-between">
-                <div>
-                  <h4 className="text-[14px] font-bold text-slate-900 mb-1">Disconnect Repository</h4>
-                  <p className="text-[13px] text-slate-500 max-w-lg leading-relaxed">
-                    Once you disconnect a repository, DevBoard will stop tracking future pull requests. 
-                    However, your existing architectural decisions will remain in the DevBoard dashboard.
-                  </p>
-                </div>
-                <button className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-accent-red text-[13px] font-semibold rounded-lg shadow-sm transition-colors whitespace-nowrap">
-                  Disconnect Repo
-                </button>
-              </div>
-
-              <div className="h-px bg-accent-red/10"></div>
-
-              <div className="p-6 flex items-center justify-between bg-accent-red/5">
-                <div>
-                  <h4 className="text-[14px] font-bold text-accent-red mb-1">Delete Repository Data</h4>
-                  <p className="text-[13px] text-accent-red/80 max-w-lg leading-relaxed">
-                    This will permanently delete all architectural decisions, conflicts, and webhooks associated with this repository. This action cannot be undone.
-                  </p>
-                </div>
-                <button className="px-4 py-2 bg-accent-red hover:bg-accent-red/90 text-white text-[13px] font-semibold rounded-lg shadow-sm transition-colors whitespace-nowrap">
-                  Delete Data
-                </button>
-              </div>
-
-            </div>
+            <SettingsClient repoId={repoId} />
           </div>
 
         </div>

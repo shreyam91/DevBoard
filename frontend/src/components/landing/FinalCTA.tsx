@@ -7,7 +7,7 @@ import { Annotation } from "./Doodles";
 
 export function FinalCTA() {
   return (
-    <section className="relative px-6 py-40 md:px-12 max-w-[1000px] mx-auto text-center overflow-hidden">
+    <section className="relative px-6 py-10 md:px-12 max-w-[1000px] mx-auto text-center overflow-hidden">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}

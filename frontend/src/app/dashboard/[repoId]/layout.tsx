@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import NavLink from './NavLink';
 import UserDropdown from './UserDropdown';
 import { Background } from '@/components/landing/Background';
-import { LayoutDashboard, Activity, AlertTriangle, FileCode, GitPullRequest, Settings, Box, ChevronsUpDown } from 'lucide-react';
+import { LayoutDashboard, Activity, AlertTriangle, FileCode, GitPullRequest, Settings, Box, ChevronsUpDown, GitMerge } from 'lucide-react';
 
 export default async function DashboardLayout({
   children,
@@ -19,7 +19,14 @@ export default async function DashboardLayout({
   const { repoId } = params;
   
   const activeRepo = { id: repoId, name: repoId, user_id: session.user.id };
-  const unresolvedConflictsCount = 2; // Mocked for UI
+  
+  const unresolvedConflictsCount = await prisma.conflict.count({
+    where: { repo_id: repoId, resolved: false }
+  });
+
+  const pendingDecisionsCount = await prisma.pendingDecision.count({
+    where: { repo_id: repoId, status: 'pending' }
+  });
 
   const getInitials = (name?: string | null) => {
     if (!name) return 'U';
@@ -62,6 +69,9 @@ export default async function DashboardLayout({
           </NavLink>
           <NavLink href={`/dashboard/${repoId}/timeline`} icon={<Activity />}>
             Decision Timeline
+          </NavLink>
+          <NavLink href={`/dashboard/${repoId}/pending`} icon={<GitMerge />} badgeCount={pendingDecisionsCount}>
+            Pending Decisions
           </NavLink>
           <NavLink href={`/dashboard/${repoId}/conflicts`} icon={<AlertTriangle />} badgeCount={unresolvedConflictsCount}>
             Conflicts

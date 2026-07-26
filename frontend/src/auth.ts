@@ -2,38 +2,28 @@ import NextAuth from 'next-auth';
 import GitHub from 'next-auth/providers/github';
 import { authConfig } from './auth.config';
 import { prisma } from '@devboard/shared/src/prisma';
+import { PrismaAdapter } from '@auth/prisma-adapter';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: PrismaAdapter(prisma),
   ...authConfig,
   providers: [GitHub],
   callbacks: {
     ...authConfig.callbacks,
-    async jwt({ token, profile, account }) {
-      if (account && profile) {
-        if (account.provider === 'github' && profile.id) {
-          const githubId = profile.id.toString();
-          
-          const dbUser = await prisma.user.upsert({
-            where: { github_id: githubId },
-            update: {
-              name: (profile.name as string) || undefined,
-              email: (profile.email as string) || undefined,
-              avatar_url: (profile.avatar_url as string) || undefined,
-              github_access_token: account.access_token || undefined,
-            },
-            create: {
-              github_id: githubId,
-              name: (profile.name as string) || undefined,
-              email: (profile.email as string) || undefined,
-              avatar_url: (profile.avatar_url as string) || undefined,
-              github_access_token: account.access_token || undefined,
-            },
-          });
-          
-          token.sub = dbUser.id;
+    async jwt({ token, profile, account, user }) {
+      // If sign in just occurred, save token and ID
+      if (account && profile && user) {
+        if (account.provider === 'github') {
+          token.sub = user.id;
         }
       }
       return token;
     },
+    async session({ session, token, user }) {
+      if (session.user) {
+        session.user.id = user?.id || (token?.sub as string);
+      }
+      return session;
+    }
   },
 });

@@ -26,14 +26,14 @@ export default function PrivacyPolicyPage() {
       <Background />
       <MarketingNavbar isSignedIn={false} />
       
-      <main className="relative z-10 flex-1 px-6 py-20 md:px-12 max-w-[800px] mx-auto w-full">
+      <main className="relative z-10 flex-1 px-6 py-10 md:px-12 max-w-[800px] mx-auto w-full">
         
         {/* Header */}
-        <div className="mb-16">
+        <div className="mb-4">
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 mb-8 shadow-sm"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1.5 mb-2 shadow-sm"
           >
             <ShieldAlert className="w-4 h-4 text-accent-blue" />
             <span className="text-[12px] font-semibold text-slate-500 uppercase tracking-widest">Legal</span>
@@ -43,7 +43,7 @@ export default function PrivacyPolicyPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-[40px] md:text-[56px] font-bold tracking-tight mb-6 text-slate-900 leading-[1.1]"
+            className="text-[40px] md:text-[56px] font-bold tracking-tight mb-2 text-slate-900 leading-[1.1]"
           >
             Privacy Policy
           </motion.h1>

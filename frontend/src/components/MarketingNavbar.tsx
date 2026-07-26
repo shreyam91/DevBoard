@@ -36,10 +36,10 @@ export default function MarketingNavbar({ isSignedIn }: { isSignedIn: boolean })
       {/* Right: CTA / Hamburger */}
       <div className="flex items-center gap-4">
         <div className="hidden md:flex items-center gap-4">
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-[14px] font-medium text-slate-500 hover:text-slate-900 transition-colors">
+          {/* <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-[14px] font-medium text-slate-500 hover:text-slate-900 transition-colors">
             GitHub
-          </a>
-          <div className="w-[1px] h-4 bg-slate-200"></div>
+          </a> */}
+          {/* <div className="w-[1px] h-4 bg-slate-200"></div> */}
           {isSignedIn ? (
             <Link
               href="/dashboard"

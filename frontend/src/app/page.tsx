@@ -15,7 +15,7 @@ export default function LandingPage() {
       <Background />
       <MarketingNavbar isSignedIn={false} />
       
-      <main className="relative z-10 flex flex-col pt-16">
+      <main className="relative z-10 flex flex-col pt-10">
         <Hero />
         <Problem />
         <SolutionFeatures />

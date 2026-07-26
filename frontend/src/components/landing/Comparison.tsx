@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Check, X } from "lucide-react";
-import { cn } from "@/utils/cn";
+// import { cn } from "@/utils/cn";
 
 const features = [
   "Automatically discovers decisions",
@@ -13,8 +13,8 @@ const features = [
 
 export function Comparison() {
   return (
-    <section className="px-6 py-32 md:px-12 max-w-[900px] mx-auto border-b border-slate-200">
-      <div className="mb-20 flex flex-col items-start md:items-center md:text-center">
+    <section className="px-6 py- md:px-12 max-w-[900px] mx-auto border-b border-slate-200">
+      <div className="mb-10 flex flex-col items-start md:items-center md:text-center">
         <h2 className="text-[32px] md:text-[40px] font-semibold text-slate-900 mb-6 tracking-tight">The difference is automation.</h2>
         <p className="text-[16px] md:text-[18px] text-slate-600 max-w-2xl">
           Other tools require manual data entry. We believe the best documentation is the documentation that writes itself.
@@ -73,9 +73,9 @@ export function Comparison() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3 }}
-          className="mt-8 p-8 rounded-2xl border-2 border-slate-900 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]"
+          className="mt-4 p-8 rounded-2xl border-2 border-slate-900 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]"
         >
-          <div className="text-[20px] font-bold text-slate-900 mb-6">DevBoard</div>
+          <div className="text-[20px] font-bold text-slate-900 mb-4">DevBoard</div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {features.map((feature, i) => (
               <motion.div 

@@ -2,7 +2,16 @@ import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@prisma/client';
 
-const connectionString = `${process.env.DATABASE_URL}`;
+let connectionString = `${process.env.DATABASE_URL}`;
+if (connectionString.startsWith('prisma+postgres://')) {
+  const url = new URL(connectionString);
+  const apiKey = url.searchParams.get('api_key');
+  if (apiKey) {
+    const decoded = Buffer.from(apiKey, 'base64').toString('utf-8');
+    const { databaseUrl } = JSON.parse(decoded);
+    connectionString = databaseUrl;
+  }
+}
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 

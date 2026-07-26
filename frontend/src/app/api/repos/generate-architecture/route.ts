@@ -16,27 +16,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Verify ownership and get github token & repo full_name
+    // Verify ownership and get repo full_name
     const repo = await prisma.repo.findFirst({
       where: {
         id: repoId,
         user_id: session.user.id
-      },
-      include: {
-        user: {
-          select: { github_access_token: true }
-        }
       }
     });
 
-    if (!repo || !repo.user.github_access_token) {
-      return NextResponse.json({ error: 'Repository not found or unauthorized' }, { status: 403 });
+    if (!repo) {
+      return NextResponse.json({ error: 'Repository not found' }, { status: 404 });
+    }
+
+    const dbAccount = await prisma.account.findFirst({
+      where: { userId: session.user.id, provider: 'github' },
+      select: { access_token: true }
+    });
+
+    if (!dbAccount?.access_token) {
+      return NextResponse.json({ error: 'No GitHub token found' }, { status: 403 });
     }
 
     await executeArchitecturePipeline(
       repo.id,
       repo.full_name,
-      repo.user.github_access_token,
+      dbAccount.access_token,
       {
         source: 'questionnaire',
         data: answers,

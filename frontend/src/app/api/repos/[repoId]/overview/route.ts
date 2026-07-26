@@ -77,13 +77,17 @@ export async function GET(
     }
   });
 
+  const pending_decisions = await prisma.pendingDecision.count({
+    where: { repo_id: repoId, status: 'pending' }
+  });
+
   return NextResponse.json({
     decisions,
     conflicts,
     stats: {
       total_decisions,
       unresolved_conflicts: conflicts.length,
-      prs_analyzed: 0, // Placeholder
+      pending_decisions,
       decisions_this_month
     }
   });

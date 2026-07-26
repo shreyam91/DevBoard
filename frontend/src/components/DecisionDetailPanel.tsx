@@ -2,21 +2,25 @@
 
 import React, { useEffect, useState } from 'react';
 
+import { Category, Source } from '@prisma/client';
+
 export type FullDecision = {
   id: string;
   title: string;
   rationale: string;
-  category: string;
-  source: string;
+  category: Category;
+  source: Source;
   pr_url?: string | null;
   pr_number?: number | null;
   created_at: string;
   confirmed_by_user: boolean;
+  has_conflict: boolean;
 };
 
 export type FullConflict = {
   id: string;
   decision_id: string;
+  decision_title: string;
   pr_url: string;
   pr_title: string;
   pr_number: number;

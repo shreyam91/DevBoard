@@ -7,7 +7,7 @@ import { HandDrawnArrow } from "./Doodles";
 
 export function Hero() {
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center px-6 pt-24 pb-12 md:px-12 overflow-hidden border-b border-slate-200">
+    <section className="relative min-h-[90vh] flex items-center justify-center px-6 md:px-12 overflow-hidden border-b border-slate-200">
       <div className="max-w-[1200px] mx-auto w-full grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-16 items-center">
         
         {/* Left: Engineered Typography */}
@@ -17,17 +17,17 @@ export function Hero() {
           transition={{ duration: 0.6, ease: "easeOut" }}
           className="relative z-10 flex flex-col items-start text-left"
         >
-          <div className="mb-8 inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 shadow-sm">
+          <div className="mb-2 inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 shadow-sm">
             <Database className="w-3.5 h-3.5 text-slate-500" />
             <span className="text-[12px] font-semibold tracking-wide text-slate-600 uppercase">The Memory Layer for Software Architecture</span>
           </div>
 
-          <h1 className="text-[52px] md:text-[68px] lg:text-[76px] font-bold tracking-tight text-slate-900 leading-[1.05] mb-6">
+          <h1 className="text-[42px] md:text-[58px] lg:text-[66px] font-bold tracking-tight text-slate-900 leading-[1.05] mb-2">
             Every Architecture <br /> Decision. <br />
             <span className="text-slate-400">Remembered Forever.</span>
           </h1>
 
-          <p className="max-w-lg text-[16px] md:text-[18px] leading-[1.6] text-slate-600 mb-10 font-medium">
+          <p className="max-w-lg text-[16px] md:text-[18px] leading-[1.6] text-slate-600 mb-4 font-medium">
             Every pull request changes your architecture. DevBoard automatically reconstructs, documents, and protects those decisions before technical debt takes over.
           </p>
 

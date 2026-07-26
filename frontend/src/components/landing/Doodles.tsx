@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/utils/cn";
 
 // Utility for rough stroke rendering
-const roughPathTransition = { duration: 0.8, ease: "easeOut" };
+const roughPathTransition = { duration: 0.8, ease: "easeOut" as const };
 
 export function HandDrawnArrow({ className, delay = 0 }: { className?: string; delay?: number }) {
   return (

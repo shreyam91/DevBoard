@@ -12,17 +12,18 @@ export default function NotFound() {
 
   useEffect(() => {
     const sequence = [1, 2, 3, 4, 5];
-    let timeoutId: NodeJS.Timeout;
+    let cancelled = false;
 
     const runSequence = async () => {
       for (const step of sequence) {
+        if (cancelled) break;
         await new Promise(r => setTimeout(r, 800));
-        setTerminalLines(step);
+        if (!cancelled) setTerminalLines(step);
       }
     };
 
     runSequence();
-    return () => clearTimeout(timeoutId);
+    return () => { cancelled = true; };
   }, []);
 
   return (
@@ -30,7 +31,7 @@ export default function NotFound() {
       <Background />
       <MarketingNavbar isSignedIn={false} />
       
-      <main className="relative z-10 flex-1 px-6 py-20 md:px-12 max-w-[1200px] mx-auto w-full grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-16 items-center">
+      <main className="relative z-10 flex-1 px-6 py-10 md:px-8 max-w-[1200px] mx-auto w-full grid grid-cols-1 lg:grid-cols-[1fr_1.2fr] gap-16 items-center">
         
         {/* Left Side: Typography & Actions */}
         <div className="flex flex-col items-start text-left">
@@ -57,18 +58,19 @@ export default function NotFound() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-[16px] md:text-[18px] text-slate-600 leading-[1.7] mb-8"
+            className="text-[16px] md:text-[18px] text-slate-600 leading-[1.7] mb-4"
           >
-            Our architecture scanner searched every branch, commit, and decision history, but this page doesn't exist.
-            <br className="hidden md:block"/><br className="hidden md:block"/>
-            It may have been moved, renamed, or never committed.
+            Our architecture scanner searched every branch, commit, and decision history, but this page doesn&apos;t exist.
+            <br className="hidden md:block"/>
+            {/* <br className="hidden md:block"/> */}
+            <p className="text-blue-700">It may have been moved, renamed, or never committed.</p>
           </motion.p>
           
           <motion.div 
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="flex flex-wrap items-center gap-4 mb-16"
+            className="flex flex-wrap items-center gap-4 mb-6"
           >
             <Link 
               href="/dashboard" 
@@ -83,10 +85,10 @@ export default function NotFound() {
             >
               Go Home
             </Link>
-            <button className="flex items-center gap-2 text-[14px] font-semibold text-slate-500 hover:text-slate-900 ml-2">
+            {/* <button className="flex items-center gap-2 text-[14px] font-semibold text-slate-500 hover:text-slate-900 ml-2">
               <Search className="w-4 h-4" />
               Search Repository
-            </button>
+            </button> */}
           </motion.div>
 
           {/* Fake Terminal */}
@@ -158,7 +160,7 @@ export default function NotFound() {
 
             {/* Doodles (Annotations) */}
             <motion.text x="220" y="240" fill="#64748b" fontSize="18" fontFamily="'Indie Flower', cursive" fontWeight="bold" transform="rotate(-10 220 240)" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5 }}>Broken Route</motion.text>
-            <motion.text x="120" y="130" fill="#ef4444" fontSize="48" fontFamily="'Indie Flower', cursive" fontWeight="bold" transform="rotate(5 120 130)" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 2 }}>404</motion.text>
+            <motion.text x="120" y="130" fill="#ef4444" fontSize="48" fontFamily="'Indie Flower', " fontWeight="bold" transform="rotate(5 120 130)" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 2 }}>404</motion.text>
             <motion.text x="450" y="220" fill="#64748b" fontSize="16" fontFamily="'Indie Flower', cursive" fontWeight="bold" transform="rotate(8 450 220)" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.7 }}>Missing Node</motion.text>
             
             {/* Arrow pointing to broken node */}
@@ -205,14 +207,14 @@ export default function NotFound() {
               <circle cx="-8" cy="-32" r="3" fill="#ef4444" className="animate-pulse" />
               
               {/* Magnifying Glass */}
-              <motion.g
+              {/* <motion.g
                 animate={{ rotate: [-10, 10, -10] }}
                 transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
               >
                 <circle cx="-30" cy="-30" r="15" fill="none" stroke="#2563eb" strokeWidth="3" />
                 <path d="M -20,-20 L 0,0" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" />
                 <text x="-45" y="-55" fill="#2563eb" fontSize="12" fontFamily="'Indie Flower', cursive" fontWeight="bold">Searching...</text>
-              </motion.g>
+              </motion.g> */}
             </motion.g>
 
             {/* Floating Commit Dots */}
