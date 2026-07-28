@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import NavLink from './NavLink';
 import UserDropdown from './UserDropdown';
 import { Background } from '@/components/landing/Background';
-import { LayoutDashboard, Activity, AlertTriangle, FileCode, GitPullRequest, Settings, Box, ChevronsUpDown, GitMerge } from 'lucide-react';
+import { LayoutDashboard, Activity, AlertTriangle, FileCode, GitPullRequest, Settings, Box, ChevronsUpDown, GitMerge, GitCommit } from 'lucide-react';
 
 export default async function DashboardLayout({
   children,
@@ -18,7 +18,14 @@ export default async function DashboardLayout({
   const session = { user: { id: "dev-user", name: "Developer User", email: "dev@devboard.io", image: null } };
   const { repoId } = params;
   
-  const activeRepo = { id: repoId, name: repoId, user_id: session.user.id };
+  const dbRepo = await prisma.repo.findUnique({
+    where: { id: repoId }
+  });
+  const activeRepo = { 
+    id: repoId, 
+    name: dbRepo ? dbRepo.full_name : repoId, 
+    user_id: session.user.id 
+  };
   
   const unresolvedConflictsCount = await prisma.conflict.count({
     where: { repo_id: repoId, resolved: false }
@@ -78,6 +85,12 @@ export default async function DashboardLayout({
           </NavLink>
           <NavLink href={`/dashboard/${repoId}/architecture`} icon={<FileCode />}>
             ARCHITECTURE.md
+          </NavLink>
+          <NavLink href={`/dashboard/${repoId}/prs`} icon={<GitPullRequest />}>
+            Pull Requests
+          </NavLink>
+          <NavLink href={`/dashboard/${repoId}/commits`} icon={<GitCommit />}>
+            Commits
           </NavLink>
 
           <div className="mt-8 mb-3 px-3 flex items-center gap-2">
