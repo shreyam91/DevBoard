@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 function QuestionnaireForm() {
   const router = useRouter();
@@ -24,7 +25,7 @@ function QuestionnaireForm() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!repoId) return alert('Repository ID is missing.');
+    if (!repoId) return toast.error('Repository ID is missing.');
     setLoading(true);
 
     try {
@@ -42,7 +43,7 @@ function QuestionnaireForm() {
       router.push('/dashboard');
     } catch (error) {
       console.error(error);
-      alert('Something went wrong. Please try again.');
+      toast.error('Something went wrong. Please try again.');
       setLoading(false);
     }
   };

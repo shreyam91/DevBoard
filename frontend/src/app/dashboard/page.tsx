@@ -20,12 +20,12 @@ export default async function DashboardRootPage() {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 selection:bg-accent-blue/20">
       {/* Topbar */}
       <header className="h-[60px] bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-10">
-        <div className="flex items-center gap-3">
+        <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <div className="w-[28px] h-[28px] bg-accent-blue rounded flex items-center justify-center shrink-0">
             <i className="ti ti-topology-star-3 text-white text-[16px]"></i>
           </div>
           <span className="text-[15px] font-semibold text-slate-900">DevBoard</span>
-        </div>
+        </Link>
 
         <div className="flex items-center gap-4">
           <Link href="/docs" className="text-[13px] font-medium text-slate-500 hover:text-slate-900 transition-colors">Documentation</Link>

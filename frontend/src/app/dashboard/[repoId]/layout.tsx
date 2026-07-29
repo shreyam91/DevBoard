@@ -5,7 +5,15 @@ import { redirect } from 'next/navigation';
 import NavLink from './NavLink';
 import UserDropdown from './UserDropdown';
 import { Background } from '@/components/landing/Background';
-import { LayoutDashboard, Activity, AlertTriangle, FileCode, GitPullRequest, Settings, Box, ChevronsUpDown, GitMerge, GitCommit } from 'lucide-react';
+import { LayoutDashboard, Activity, AlertTriangle, FileCode, GitPullRequest, Settings, Box, ChevronsUpDown, GitMerge, GitCommit, Sparkles, Search } from 'lucide-react';
+import Link from 'next/link';
+
+export async function generateMetadata({ params }: { params: { repoId: string } }) {
+  const repo = await prisma.repo.findUnique({ where: { id: params.repoId } });
+  return {
+    title: repo ? `${repo.name} | DevBoard` : 'DevBoard',
+  };
+}
 
 export default async function DashboardLayout({
   children,
@@ -14,8 +22,10 @@ export default async function DashboardLayout({
   children: React.ReactNode;
   params: { repoId: string };
 }) {
-  // AUTH BYPASS FOR UI DEVELOPMENT
-  const session = { user: { id: "dev-user", name: "Developer User", email: "dev@devboard.io", image: null } };
+  const session = await auth();
+  if (!session?.user) {
+    redirect('/login');
+  }
   const { repoId } = params;
   
   const dbRepo = await prisma.repo.findUnique({
@@ -49,7 +59,7 @@ export default async function DashboardLayout({
         
         {/* Logo block */}
         <div className="pt-8 pb-6 px-5 border-b border-slate-200/60">
-          <div className="flex items-center gap-3">
+          <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="w-[32px] h-[32px] bg-accent-blue rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-accent-blue/20">
               <Box className="text-white w-[18px] h-[18px]" />
             </div>
@@ -57,16 +67,18 @@ export default async function DashboardLayout({
               <span className="text-[15px] font-bold text-slate-900 tracking-tight leading-tight">DevBoard</span>
               <span className="text-[11px] font-medium text-slate-500 leading-tight mt-0.5">Architecture Engine</span>
             </div>
-          </div>
+          </Link>
           
           {/* Repo pill */}
-          <div className="mt-6 rounded-lg bg-white border border-slate-200 shadow-sm p-2 flex items-center justify-between cursor-pointer hover:border-slate-300 hover:shadow transition-all group">
-            <div className="flex items-center gap-2 overflow-hidden">
-              <i className="ti ti-brand-github text-slate-400 group-hover:text-slate-600 text-[16px] transition-colors shrink-0"></i>
-              <span className="text-slate-700 font-semibold text-[13px] truncate">{activeRepo.name}</span>
+          <Link href="/dashboard" className="mt-6 rounded-lg bg-white border border-slate-200 shadow-sm p-2 flex items-center justify-between cursor-pointer hover:border-slate-300 hover:shadow transition-all group block">
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2 overflow-hidden">
+                <i className="ti ti-brand-github text-slate-400 group-hover:text-slate-600 text-[16px] transition-colors shrink-0"></i>
+                <span className="text-slate-700 font-semibold text-[13px] truncate">{activeRepo.name}</span>
+              </div>
+              <ChevronsUpDown className="text-slate-400 w-[14px] h-[14px] shrink-0" />
             </div>
-            <ChevronsUpDown className="text-slate-400 w-[14px] h-[14px] shrink-0" />
-          </div>
+          </Link>
         </div>
 
         {/* Navigation */}
@@ -83,8 +95,25 @@ export default async function DashboardLayout({
           <NavLink href={`/dashboard/${repoId}/conflicts`} icon={<AlertTriangle />} badgeCount={unresolvedConflictsCount}>
             Conflicts
           </NavLink>
-          <NavLink href={`/dashboard/${repoId}/architecture`} icon={<FileCode />}>
+          
+          <div className="mt-6 mb-2 px-3 flex items-center gap-2">
+            <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Architecture</span>
+          </div>
+          <NavLink href={`/dashboard/${repoId}/architecture`} icon={<Box />}>
+            Interactive Graph
+          </NavLink>
+          <NavLink href={`/dashboard/${repoId}/architecture-review`} icon={<Sparkles />}>
+            AI Review
+          </NavLink>
+          <NavLink href={`/dashboard/${repoId}/architecture-legacy`} icon={<FileCode />}>
             ARCHITECTURE.md
+          </NavLink>
+          
+          <div className="mt-6 mb-2 px-3 flex items-center gap-2">
+            <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Development</span>
+          </div>
+          <NavLink href={`/dashboard/${repoId}/search`} icon={<Search />}>
+            Semantic Search
           </NavLink>
           <NavLink href={`/dashboard/${repoId}/prs`} icon={<GitPullRequest />}>
             Pull Requests

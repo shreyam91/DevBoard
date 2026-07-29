@@ -1,9 +1,14 @@
 import React from 'react';
 import { Camera } from 'lucide-react';
 
-export default function ProfilePage() {
-  // Mocked session
-  const session = { user: { id: "dev-user", name: "Developer User", email: "dev@devboard.io", image: null } };
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
+
+export default async function ProfilePage() {
+  const session = await auth();
+  if (!session?.user) {
+    redirect('/login');
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-transparent">

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 export type GitHubRepo = {
   id: number;
@@ -42,7 +43,7 @@ export default function RepoList({ repos }: { repos: GitHubRepo[] }) {
       }
     } catch (error) {
       console.error(error);
-      alert('Failed to connect repository. Please try again.');
+      toast.error('Failed to connect repository. Please try again.');
       setLoadingId(null);
     }
   };

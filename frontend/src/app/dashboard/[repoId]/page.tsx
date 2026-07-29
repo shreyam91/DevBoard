@@ -4,6 +4,7 @@ import { auth } from '@/auth';
 import OverviewClient from './OverviewClient';
 import { Plus, FileCode, CheckCircle2 } from 'lucide-react';
 import SyncButton from './SyncButton';
+import Link from 'next/link';
 
 export default async function DashboardOverview({ params }: { params: { repoId: string } }) {
   const { repoId } = params;
@@ -71,14 +72,14 @@ export default async function DashboardOverview({ params }: { params: { repoId: 
 
         <div className="flex items-center gap-3">
           <SyncButton repoId={repoId} />
-          <button className="h-[36px] px-4 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm rounded-lg flex items-center gap-2 transition-all">
+          <Link href={`/dashboard/${repoId}/pending`} className="h-[36px] px-4 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm rounded-lg flex items-center gap-2 transition-all">
             <Plus className="w-4 h-4 text-slate-500" />
             <span className="text-[13px] font-semibold text-slate-700">Log Decision</span>
-          </button>
-          <button className="h-[36px] px-4 bg-accent-blue hover:bg-accent-blue/90 shadow-sm rounded-lg flex items-center gap-2 transition-all group">
+          </Link>
+          <Link href={`/dashboard/${repoId}/architecture-legacy`} className="h-[36px] px-4 bg-accent-blue hover:bg-accent-blue/90 shadow-sm rounded-lg flex items-center gap-2 transition-all group">
             <FileCode className="w-4 h-4 text-white/90 group-hover:text-white" />
             <span className="text-[13px] font-semibold text-white">ARCHITECTURE.md</span>
-          </button>
+          </Link>
         </div>
       </header>
 

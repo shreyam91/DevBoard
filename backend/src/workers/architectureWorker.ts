@@ -1,11 +1,11 @@
 import { Job } from 'bullmq';
 import { prisma } from '@devboard/shared/src/prisma';
-import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
-import crypto from 'crypto';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ 
+  baseURL: 'https://openrouter.ai/api/v1',
+  apiKey: process.env.OPEN_AI_API || process.env.OPENAI_API_KEY 
+});
 
 // Utility to push to GitHub
 async function pushToGitHub(repoFullName: string, token: string, path: string, content: string, message: string) {
@@ -79,14 +79,15 @@ export async function processArchitectureUpdateJob(job: Job) {
 
   const pending = await prisma.pendingDecision.findUnique({
     where: { id: pendingDecisionId },
-    include: { repo: { include: { user: true } } }
+    include: { repo: { include: { user: { include: { accounts: true } } } } }
   });
 
   if (!pending) throw new Error('Pending decision not found');
   if (pending.status !== 'pending') throw new Error(`Pending decision is already ${pending.status}`);
 
   const repo = pending.repo;
-  if (!repo.user.github_access_token) throw new Error('GitHub token missing');
+  const token = repo.user.github_access_token || repo.user.accounts.find(a => a.provider === 'github')?.access_token;
+  if (!token) throw new Error('GitHub token missing');
 
   // 1. Generate Embedding
   const embedRes = await openai.embeddings.create({
@@ -122,14 +123,16 @@ Suggested Markdown snippet: ${pending.suggested_markdown || 'None'}
 
 Please rewrite the ARCHITECTURE.md to seamlessly integrate this new decision.`;
 
-    const msg = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20240620',
+    const msg = await openai.chat.completions.create({
+      model: 'openai/gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
       max_tokens: 3000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }]
     });
 
-    const responseText = (msg.content[0] as any).text || '';
+    const responseText = msg.choices[0]?.message?.content || '';
     if (responseText) {
       newArchContent = responseText.trim();
     }

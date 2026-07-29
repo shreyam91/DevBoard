@@ -10,14 +10,17 @@ export async function processArchaeologyJob(job: Job) {
     // 1. Fetch repo and token
     const repo = await prisma.repo.findUnique({
       where: { id: repoId },
-      include: { user: true },
+      include: { user: { include: { accounts: true } } },
     });
 
-    if (!repo || !repo.user.github_access_token) {
-      throw new Error('Repository or GitHub token not found');
+    if (!repo) {
+      throw new Error('Repository not found');
     }
 
-    const token = repo.user.github_access_token;
+    const token = repo.user.github_access_token || repo.user.accounts.find(a => a.provider === 'github')?.access_token;
+    if (!token) {
+      throw new Error('GitHub token not found');
+    }
 
     // Update job status to processing if we have a tracking DB record
     if (jobId) {

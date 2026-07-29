@@ -1,6 +1,6 @@
 import { Job } from 'bullmq';
 import { prisma } from '@devboard/shared/src/prisma';
-import { claude } from '@devboard/shared/src/llm/claude';
+import OpenAI from 'openai';
 
 interface ScoreJobData {
   repoId: string;
@@ -125,13 +125,16 @@ Return ONLY a JSON array of strings, for example: ["Consider documenting recent 
 
     let insights: string[] = [];
     try {
-      const response = await claude.messages.create({
-        model: 'claude-3-haiku-20240307',
-        max_tokens: 300,
+      const openai = new OpenAI({ 
+        baseURL: 'https://openrouter.ai/api/v1',
+        apiKey: process.env.OPEN_AI_API || process.env.OPENAI_API_KEY 
+      });
+      const response = await openai.chat.completions.create({
+        model: 'openai/gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }]
       });
       // @ts-ignore
-      const text = response.content[0].text;
+      const text = response.choices[0].message.content;
       const parsed = JSON.parse(text.substring(text.indexOf('['), text.lastIndexOf(']') + 1));
       if (Array.isArray(parsed)) {
         insights = parsed;

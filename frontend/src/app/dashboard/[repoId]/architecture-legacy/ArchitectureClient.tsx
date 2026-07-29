@@ -4,6 +4,7 @@ import React from 'react';
 import { FileCode, Download, ExternalLink, RefreshCw, Clock } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { formatDistanceToNow } from 'date-fns';
+import toast from 'react-hot-toast';
 
 interface Props {
   repoId: string;
@@ -13,6 +14,25 @@ interface Props {
 }
 
 export default function ArchitectureClient({ repoId, initialContent, lastUpdated, version }: Props) {
+  const [isRegenerating, setIsRegenerating] = React.useState(false);
+
+  const handleRegenerate = async () => {
+    try {
+      setIsRegenerating(true);
+      const res = await fetch('/api/repos/generate-architecture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ repoId, answers: {} })
+      });
+      if (!res.ok) throw new Error('Failed to start regeneration');
+      toast.success('Architecture regeneration started. It will update shortly.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Error starting regeneration.');
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
   
   const handleDownload = () => {
     const blob = new Blob([initialContent], { type: 'text/markdown' });
@@ -44,9 +64,13 @@ export default function ArchitectureClient({ repoId, initialContent, lastUpdated
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="h-[36px] px-4 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm rounded-lg flex items-center gap-2 transition-all group">
-            <RefreshCw className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
-            <span className="text-[13px] font-semibold text-slate-700">Regenerate</span>
+          <button 
+            onClick={handleRegenerate}
+            disabled={isRegenerating}
+            className={`h-[36px] px-4 bg-white border border-slate-200 hover:border-slate-300 hover:bg-slate-50 shadow-sm rounded-lg flex items-center gap-2 transition-all group ${isRegenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <RefreshCw className={`w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors ${isRegenerating ? 'animate-spin' : ''}`} />
+            <span className="text-[13px] font-semibold text-slate-700">{isRegenerating ? 'Regenerating...' : 'Regenerate'}</span>
           </button>
           <button 
             onClick={handleDownload}

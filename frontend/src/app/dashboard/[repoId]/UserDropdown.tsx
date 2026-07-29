@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { signOut } from 'next-auth/react';
 import { LogOut, User, Settings, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
@@ -80,10 +81,16 @@ export default function UserDropdown({ user }: UserDropdownProps) {
 
           <div className="h-px bg-slate-100 my-1"></div>
 
-          <Link href="/login" onClick={() => setIsOpen(false)} className="w-full px-4 py-2 text-left text-[13px] font-medium text-accent-red hover:bg-accent-red/5 flex items-center gap-2 transition-colors">
+          <button 
+            onClick={() => {
+              setIsOpen(false);
+              signOut({ callbackUrl: '/login' });
+            }}
+            className="w-full px-4 py-2 text-left text-[13px] font-medium text-accent-red hover:bg-accent-red/5 flex items-center gap-2 transition-colors"
+          >
             <LogOut className="w-4 h-4" />
             Log out
-          </Link>
+          </button>
         </div>
       )}
     </div>

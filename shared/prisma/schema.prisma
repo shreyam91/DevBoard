@@ -107,6 +107,8 @@ model Repo {
   pending_decisions     PendingDecision[]
   conflicts             Conflict[]
   architecture_scores   ArchitectureScore[]
+  architecture_analyses ArchitectureAnalysis[]
+  documents             Document[]
 
   @@map("repos")
 }
@@ -295,4 +297,39 @@ model ArchitectureScore {
   calculated_at           DateTime @default(now())
 
   @@map("architecture_scores")
+}
+
+model ArchitectureAnalysis {
+  id              String   @id @default(cuid())
+  repo_id         String
+  repo            Repo     @relation(fields: [repo_id], references: [id], onDelete: Cascade)
+  version_hash    String   
+  
+  graph_data      Json?    
+  stats           Json?    
+  
+  ai_review       Json?    
+  health_score    Int?
+  
+  analyzed_at     DateTime @default(now())
+
+  @@map("architecture_analyses")
+}
+
+model Document {
+  id           String   @id @default(cuid())
+  repo_id      String
+  repo         Repo     @relation(fields: [repo_id], references: [id], onDelete: Cascade)
+  type         String   // 'repository', 'pull_request', 'commit', 'file', 'code_chunk', 'issue'
+  title        String
+  content      String   @db.Text
+  path         String?
+  url          String?
+  metadata     Json?    
+  embedding    Unsupported("vector(1536)")?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  @@index([repo_id, type])
+  @@map("documents")
 }

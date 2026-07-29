@@ -10,12 +10,12 @@ export default function MarketingNavbar({ isSignedIn }: { isSignedIn: boolean })
   return (
     <nav className="sticky top-0 z-50 flex h-[60px] items-center justify-between border-b border-slate-200 bg-white/95 backdrop-blur-sm px-6 md:px-12">
       {/* Left: Logo */}
-      <div className="flex items-center gap-3">
+      <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-black">
           <GitBranch className="w-4 h-4 text-white" />
         </div>
         <span className="text-[15px] font-semibold text-slate-900 tracking-tight">DevBoard</span>
-      </div>
+      </Link>
 
       {/* Center: Links (Desktop) */}
       <div className="hidden items-center gap-8 md:flex">

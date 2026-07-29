@@ -3,6 +3,7 @@ import { processArchaeologyJob } from './archaeologyWorker';
 import { processPrAnalysisJob } from './prAnalysisWorker';
 import { processArchitectureUpdateJob } from './architectureWorker';
 import { processScoreCalculationJob } from './scoreWorker';
+import { processSemanticSearchJob } from './semanticSearchWorker';
 
 console.log('Starting BullMQ workers...');
 
@@ -34,8 +35,15 @@ const architectureScoreWorker = createWorker(QUEUES.ARCHITECTURE_SCORE, async (j
   }
 });
 
+// Semantic Search Worker (Using Embedding Queue)
+const semanticSearchWorker = createWorker(QUEUES.EMBEDDING_GENERATION, async (job) => {
+  if (job.name === 'semantic-search-index') {
+    await processSemanticSearchJob(job);
+  }
+});
+
 // Common error handling
-[jobsWorker, prAnalysisWorker, architectureUpdateWorker, architectureScoreWorker].forEach(worker => {
+[jobsWorker, prAnalysisWorker, architectureUpdateWorker, architectureScoreWorker, semanticSearchWorker].forEach(worker => {
   worker.on('completed', (job) => {
     console.log(`Job ${job.id} of type ${job.name} completed successfully.`);
   });

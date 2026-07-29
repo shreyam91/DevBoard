@@ -7,7 +7,16 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   ...authConfig,
-  providers: [GitHub],
+  providers: [
+    GitHub({
+      allowDangerousEmailAccountLinking: true,
+      authorization: {
+        params: {
+          scope: 'read:user user:email repo'
+        }
+      }
+    })
+  ],
   callbacks: {
     ...authConfig.callbacks,
     async jwt({ token, profile, account, user }) {

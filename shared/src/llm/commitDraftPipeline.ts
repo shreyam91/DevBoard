@@ -9,7 +9,10 @@ export async function commitDraftPipeline(
   editedMarkdown: string,
   editedDecisions: any[]
 ) {
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  const openai = new OpenAI({ 
+    baseURL: 'https://openrouter.ai/api/v1',
+    apiKey: process.env.OPEN_AI_API || process.env.OPENAI_API_KEY 
+  });
 
   // 1. Fetch repo
   const repo = await prisma.repo.findUnique({

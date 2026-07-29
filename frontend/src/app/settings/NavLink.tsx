@@ -26,6 +26,7 @@ export default function NavLink({
   return (
     <Link 
       href={href} 
+      prefetch={false}
       className={cn(
         "group flex items-center justify-between px-3 py-2 rounded-lg transition-all relative font-medium text-[13px]",
         isActive 

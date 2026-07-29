@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "tsx src/index.ts",
-    "dev": "tsx watch src/index.ts"
+    "start": "tsx --env-file=../frontend/.env src/workers/index.ts",
+    "dev": "tsx watch --env-file=../frontend/.env src/workers/index.ts"
   },
   "dependencies": {
-    "@devboard/shared": "*"
+    "@devboard/shared": "*",
+    "octokit": "^5.0.5"
   },
   "devDependencies": {
     "tsx": "^4.22.4",

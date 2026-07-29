@@ -48,8 +48,10 @@ export async function POST(req: NextRequest) {
     );
 
     return NextResponse.json({ success: true, redirect: `/dashboard/${repoId}` });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error generating architecture:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    const errorMessage = error?.message || 'Unknown error';
+    const errorMeta = error?.meta || {};
+    return NextResponse.json({ error: 'Internal Server Error', details: errorMessage, meta: errorMeta }, { status: 500 });
   }
 }

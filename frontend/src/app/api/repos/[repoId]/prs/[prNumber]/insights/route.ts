@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@devboard/shared/src/prisma';
-import { GoogleGenAI } from '@google/genai';
+import OpenAI from 'openai';
 
 export async function POST(
   request: NextRequest,
@@ -53,7 +53,10 @@ export async function POST(
     });
     const diffText = await diffRes.text();
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    const ai = new OpenAI({ 
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKey: process.env.OPEN_AI_API || process.env.GEMINI_API_KEY 
+    });
     
     const prompt = `
       You are an expert Principal Software Engineer. Please review the following Pull Request and provide your insights.
@@ -79,12 +82,12 @@ export async function POST(
       Keep it brief and insightful.
     `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-pro',
-      contents: prompt,
+    const response = await ai.chat.completions.create({
+      model: 'openai/gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
     });
 
-    return NextResponse.json({ insights: response.text });
+    return NextResponse.json({ insights: response.choices[0]?.message?.content || '' });
   } catch (error: any) {
     console.error('Error generating PR insights:', error);
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });

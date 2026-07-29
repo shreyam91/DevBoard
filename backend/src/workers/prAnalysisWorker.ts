@@ -1,10 +1,11 @@
 import { Job } from 'bullmq';
 import { prisma } from '@devboard/shared/src/prisma';
-import Anthropic from '@anthropic-ai/sdk';
 import OpenAI from 'openai';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ 
+  baseURL: 'https://openrouter.ai/api/v1',
+  apiKey: process.env.OPEN_AI_API || process.env.OPENAI_API_KEY 
+});
 
 // Utility to fetch PR diff
 async function fetchDiff(repoFullName: string, prNumber: number, token: string) {
@@ -49,13 +50,16 @@ export async function processPrAnalysisJob(job: Job) {
   // 1. Fetch Repo & Token
   const repo = await prisma.repo.findUnique({
     where: { id: repoId },
-    include: { user: true },
+    include: { user: { include: { accounts: true } } },
   });
 
-  if (!repo || !repo.user.github_access_token) {
-    throw new Error('Repo or token not found');
+  if (!repo) {
+    throw new Error('Repo not found');
   }
-  const token = repo.user.github_access_token;
+  const token = repo.user.github_access_token || repo.user.accounts.find(a => a.provider === 'github')?.access_token;
+  if (!token) {
+    throw new Error('GitHub token not found');
+  }
 
   // 2. Fetch Diff
   const rawDiff = await fetchDiff(repoFullName, prNumber, token);
@@ -98,59 +102,64 @@ ${JSON.stringify(decisions, null, 2)}
 </EXISTING_DECISIONS>
 `;
 
-  const msg = await anthropic.messages.create({
-    model: 'claude-3-5-sonnet-20240620',
-    max_tokens: 2500,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
-    tools: [{
-      name: 'save_pr_analysis',
-      description: 'Save the PR analysis results',
-      input_schema: {
-        type: 'object',
+  const responseSchema = {
+    type: "json_schema",
+    json_schema: {
+      name: "pr_analysis",
+      schema: {
+        type: "object",
         properties: {
           newDecisions: {
-            type: 'array',
+            type: "array",
             items: {
-              type: 'object',
+              type: "object",
               properties: {
-                title: { type: 'string' },
-                description: { type: 'string' },
-                rationale: { type: 'string' },
-                confidence: { type: 'number' },
-                affected_files: { type: 'array', items: { type: 'string' } },
-                suggested_markdown: { type: 'string' }
+                title: { type: "string" },
+                description: { type: "string" },
+                rationale: { type: "string" },
+                confidence: { type: "number" },
+                affected_files: { type: "array", items: { type: "string" } },
+                suggested_markdown: { type: "string" }
               },
-              required: ['title', 'description', 'rationale', 'confidence', 'affected_files', 'suggested_markdown']
+              required: ["title", "description", "rationale", "confidence", "affected_files", "suggested_markdown"]
             }
           },
           conflicts: {
-            type: 'array',
+            type: "array",
             items: {
-              type: 'object',
+              type: "object",
               properties: {
-                decisionId: { type: 'string' },
-                decisionTitle: { type: 'string' },
-                reason: { type: 'string' },
-                confidence: { type: 'number' },
-                severity: { type: 'string', enum: ['low', 'medium', 'high'] }
+                decisionId: { type: "string" },
+                decisionTitle: { type: "string" },
+                reason: { type: "string" },
+                confidence: { type: "number" },
+                severity: { type: "string", enum: ["low", "medium", "high"] }
               },
-              required: ['decisionId', 'decisionTitle', 'reason', 'confidence', 'severity']
+              required: ["decisionId", "decisionTitle", "reason", "confidence", "severity"]
             }
           }
         },
-        required: ['conflicts', 'newDecisions']
+        required: ["conflicts", "newDecisions"],
+        additionalProperties: false
       }
-    }],
-    tool_choice: { type: 'tool', name: 'save_pr_analysis' }
+    }
+  };
+
+  const msg = await openai.chat.completions.create({
+    model: 'openai/gpt-4o-mini',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt }
+    ],
+    response_format: responseSchema as any
   });
 
-  const toolBlock = msg.content.find((c) => c.type === 'tool_use');
-  if (!toolBlock || toolBlock.type !== 'tool_use') {
-    throw new Error('Claude did not return a tool_use block');
+  const content = msg.choices[0]?.message?.content;
+  if (!content) {
+    throw new Error('LLM did not return any content');
   }
 
-  const result = toolBlock.input as {
+  const result = JSON.parse(content) as {
     newDecisions: { title: string; description: string; rationale: string; confidence: number; affected_files: string[]; suggested_markdown: string; }[];
     conflicts: { decisionId: string; decisionTitle: string; reason: string; confidence: number; severity: string; }[];
   };

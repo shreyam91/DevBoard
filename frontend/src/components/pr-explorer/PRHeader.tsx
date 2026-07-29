@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import React from 'react';
 import { format } from 'date-fns';
 import { GitPullRequest, CheckCircle2, XCircle, GitMerge } from 'lucide-react';

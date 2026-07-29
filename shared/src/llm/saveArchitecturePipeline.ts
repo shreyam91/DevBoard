@@ -1,7 +1,7 @@
 import { prisma } from '../prisma';
 import { generateArchitecture, ArchitectureContext } from './generateArchitecture';
 import { commitFile } from '../github/commitFile';
-import { GoogleGenAI } from '@google/genai';
+import OpenAI from 'openai';
 
 export async function executeArchitecturePipeline(
   repoId: string,
@@ -9,7 +9,10 @@ export async function executeArchitecturePipeline(
   githubAccessToken: string,
   context: ArchitectureContext
 ) {
-  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  const ai = new OpenAI({ 
+    baseURL: 'https://openrouter.ai/api/v1',
+    apiKey: process.env.OPEN_AI_API || process.env.GEMINI_API_KEY 
+  });
 
   // 1. Generate architecture using LLM
   const llmResult = await generateArchitecture(context);
@@ -18,13 +21,13 @@ export async function executeArchitecturePipeline(
   const decisionsWithEmbeddings = await Promise.all(
     llmResult.decisions.map(async (decision) => {
       const textToEmbed = `Title: ${decision.title}\nRationale: ${decision.rationale}`;
-      const embeddingRes = await ai.models.embedContent({
-        model: 'text-embedding-004',
-        contents: textToEmbed,
+      const embeddingRes = await ai.embeddings.create({
+        model: 'openai/text-embedding-3-small',
+        input: textToEmbed,
       });
       return {
         ...decision,
-        embedding: embeddingRes.embeddings[0].values,
+        embedding: embeddingRes.data[0].embedding,
       };
     })
   );
@@ -58,21 +61,33 @@ export async function executeArchitecturePipeline(
 
     // Insert Decisions with pgvector
     for (const dec of decisionsWithEmbeddings) {
-      const id = crypto.randomUUID();
-      await tx.$executeRaw`
-        INSERT INTO decisions (id, repo_id, title, rationale, category, source, embedding, created_at, confirmed_by_user)
-        VALUES (
-          ${id},
-          ${repoId},
-          ${dec.title},
-          ${dec.rationale},
-          ${dec.category}::"Category",
-          ${dec.source}::"Source",
-          ${dec.embedding}::vector,
-          NOW(),
-          false
-        )
-      `;
+      const decision = await tx.decision.create({
+        data: {
+          repo_id: repoId,
+          title: dec.title,
+          rationale: dec.rationale,
+          category: dec.category,
+          source: dec.source,
+          confirmed_by_user: false,
+        }
+      });
+      const embeddingId = crypto.randomUUID();
+      const embeddingString = `[${dec.embedding.join(',')}]`;
+      try {
+        await tx.$executeRaw`
+          INSERT INTO decision_embeddings (id, decision_id, vector)
+          VALUES (
+            ${embeddingId},
+            ${decision.id},
+            ${embeddingString}::vector
+          )
+        `;
+      } catch (err: any) {
+        console.error("FAILED TO INSERT EMBEDDING:", err);
+        if (err.meta) console.error("Error meta:", err.meta);
+        if (err.cause) console.error("Error cause:", err.cause);
+        throw err;
+      }
     }
     
     // Update repo to mark archaeology_done
