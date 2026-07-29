@@ -41,7 +41,7 @@ export default function ContactPage() {
             transition={{ delay: 0.1 }}
             className="text-[48px] md:text-[64px] font-bold tracking-tight mb-2 text-slate-900 leading-[1.1]"
           >
-            Let's talk <br/> architecture.
+            Let&apos;s talk <br/> architecture.
           </motion.h1>
           
           <motion.p 
@@ -59,23 +59,7 @@ export default function ContactPage() {
             transition={{ delay: 0.3 }}
             className="flex flex-col gap-8 border-l-2 border-slate-200 pl-6"
           >
-            <div>
-              <h3 className="text-[14px] font-semibold text-slate-900 uppercase tracking-widest mb-4">Direct Links</h3>
-              <div className="flex flex-col gap-3">
-                <a href="mailto:hello@devboard.io" className="group flex items-center gap-3 text-[15px] font-medium text-slate-600 hover:text-accent-blue transition-colors">
-                  <Mail className="w-5 h-5 text-slate-400 group-hover:text-accent-blue transition-colors" />
-                  hello@devboard.io
-                </a>
-                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-3 text-[15px] font-medium text-slate-600 hover:text-slate-900 transition-colors">
-                  <GithubIcon className="w-5 h-5 text-slate-400 group-hover:text-slate-900 transition-colors" />
-                  GitHub Repository
-                </a>
-                {/* <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="group flex items-center gap-3 text-[15px] font-medium text-slate-600 hover:text-blue-600 transition-colors">
-                  <LinkedinIcon className="w-5 h-5 text-slate-400 group-hover:text-blue-600 transition-colors" />
-                  LinkedIn
-                </a> */}
-              </div>
-            </div>
+           
 
             <div>
               <h3 className="text-[14px] font-semibold text-slate-900 uppercase tracking-widest mb-4">Resources</h3>
@@ -88,96 +72,76 @@ export default function ContactPage() {
           </motion.div>
         </div>
 
-        {/* Right Side: Form & Illustration */}
-        <div className="relative pt-12 lg:pt-0">
-          
-          {/* Subtle Form Decoration SVG */}
-          <svg className="absolute -top-12 -right-12 w-64 h-64 text-slate-200 pointer-events-none z-0" viewBox="0 0 200 200" fill="none" stroke="currentColor">
-            <motion.path 
-              d="M 150,50 L 50,150 M 50,150 L 80,150 M 50,150 L 50,120" 
-              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" 
-              initial={{ pathLength: 0 }}
-              animate={{ pathLength: 1 }}
-              transition={{ duration: 1.5, delay: 0.5 }}
-            />
-            <circle cx="150" cy="50" r="4" fill="currentColor" />
-            <motion.path 
-              d="M 130,30 Q 150,10 170,30 T 170,70 Q 150,90 130,70 T 130,30" 
-              strokeWidth="1" strokeDasharray="4,4" 
-              initial={{ rotate: 0 }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              style={{ transformOrigin: "150px 50px" }}
-            />
-          </svg>
+        {/* Right Side: Contact Cards */}
+<div className="relative flex items-center justify-center">
 
-          <motion.form 
-            onSubmit={handleSubmit}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="relative z-10 flex flex-col gap-6 bg-white p-8 md:p-10 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/40"
-          >
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-semibold text-slate-700">Full Name</label>
-              <input 
-                type="text" 
-                placeholder="Shaurya "
-                required
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-colors focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-100" 
-              />
-            </div>
-            
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-semibold text-slate-700">Email Address</label>
-              <input 
-                type="email" 
-                placeholder="shaurya@company.com"
-                required
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-colors focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-100" 
-              />
-            </div>
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.3 }}
+    className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-10 shadow-xl shadow-slate-200/40"
+  >
+    <h2 className="text-3xl font-bold text-slate-900 mb-4">
+      Get in touch
+    </h2>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-semibold text-slate-700">Subject</label>
-              <input 
-                type="text" 
-                placeholder="How can we help?"
-                required
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-colors focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-100" 
-              />
-            </div>
-            
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-semibold text-slate-700">Message</label>
-              <textarea 
-                rows={4}
-                placeholder="Tell us more about your inquiry..."
-                required
-                className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-[14px] text-slate-900 outline-none transition-colors focus:border-slate-400 focus:bg-white focus:ring-4 focus:ring-slate-100 resize-none" 
-              ></textarea>
-            </div>
-            
-            <button 
-              type="submit"
-              disabled={isSending}
-              className="group relative mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-black px-4 py-4 text-[15px] font-medium text-white transition-all hover:bg-slate-900 hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-70 disabled:hover:translate-y-0"
-            >
-              <span className={isSending ? "opacity-0" : "opacity-100 transition-opacity"}>Send Message</span>
-              <Send className={`w-4 h-4 ${isSending ? 'opacity-0' : 'group-hover:translate-x-1 group-hover:-translate-y-1 transition-all'}`} />
-              
-              {isSending && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <motion.div 
-                    className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  />
-                </div>
-              )}
-            </button>
-          </motion.form>
+    <p className="text-slate-600 leading-relaxed mb-10">
+      Have questions about DevBoard, our API, enterprise plans, or want to
+      contribute? We&apos;d love to hear from you.
+    </p>
+
+    <div className="flex flex-col gap-5">
+
+      <a
+        href="mailto:hello@devboard.io"
+        className="group flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-5 py-4 transition-all hover:border-slate-300 hover:bg-white hover:shadow-md"
+      >
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50 text-accent-blue">
+            <Mail className="h-5 w-5" />
+          </div>
+
+          <div>
+            <p className="font-semibold text-slate-900">
+              Email Us
+            </p>
+            <p className="text-sm text-slate-500">
+              hello@devboard.io
+            </p>
+          </div>
         </div>
+
+        <Send className="h-5 w-5 text-slate-400 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+      </a>
+
+      <a
+        href="https://github.com/your-org"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="group flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-5 py-4 transition-all hover:border-slate-300 hover:bg-white hover:shadow-md"
+      >
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-900 text-white">
+            <GithubIcon className="h-5 w-5" />
+          </div>
+
+          <div>
+            <p className="font-semibold text-slate-900">
+              GitHub
+            </p>
+            <p className="text-sm text-slate-500">
+              View source & report issues
+            </p>
+          </div>
+        </div>
+
+        <Send className="h-5 w-5 text-slate-400 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
+      </a>
+
+    </div>
+  </motion.div>
+
+</div>
 
       </main>
       

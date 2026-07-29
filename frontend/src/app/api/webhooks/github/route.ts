@@ -139,6 +139,30 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    if (event === 'repository') {
+      const { action, repository } = payload;
+      
+      if (action === 'deleted' || action === 'archived') {
+        const repo = await prisma.repo.findUnique({
+          where: { github_repo_id: repository.id.toString() }
+        });
+
+        if (repo) {
+          await prisma.repo.update({
+            where: { id: repo.id },
+            data: { health_status: 'inaccessible' }
+          });
+
+          await prisma.webhookEvent.update({
+            where: { id: webhookEvent.id },
+            data: { repo_id: repo.id, processed: true }
+          });
+
+          return NextResponse.json({ success: true, message: `Repo marked as inaccessible due to ${action}` });
+        }
+      }
+    }
+
     return NextResponse.json({ success: true, message: 'Event ignored' });
   } catch (error) {
     console.error('Webhook error:', error);

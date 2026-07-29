@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import DecisionCard from '@/components/DecisionCard';
 import DecisionDetailPanel from '@/components/DecisionDetailPanel';
-import { AlertTriangle, FileCode, CheckCircle2 } from 'lucide-react';
+import { AlertTriangle, FileCode, CheckCircle2, Search, X } from 'lucide-react';
 import { FullDecision, FullConflict } from '@/components/DecisionDetailPanel';
 import ScoreWidget from '@/components/ScoreWidget';
 
@@ -24,6 +24,37 @@ export default function OverviewClient({ initialDecisions, initialConflicts, ini
   const [conflicts, setConflicts] = useState(initialConflicts);
   const [stats, setStats] = useState(initialStats);
   const [selectedDecisionId, setSelectedDecisionId] = useState<string | null>(null);
+
+  // Search State
+  const [query, setQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Search Effect
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (!query.trim()) {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
+      
+      setIsSearching(true);
+      try {
+        const res = await fetch(`/api/repos/${repoId}/simple-search?q=${encodeURIComponent(query)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSearchResults(data.results || []);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [query, repoId]);
 
   // Poll /pending every 30s
   useEffect(() => {
@@ -60,8 +91,67 @@ export default function OverviewClient({ initialDecisions, initialConflicts, ini
           
           <ScoreWidget repoId={repoId} />
 
+          {/* Search Bar */}
+          <div className="mb-8 relative">
+            <div className="relative flex items-center group">
+              <Search className="absolute left-4 text-slate-400 group-focus-within:text-accent-blue transition-colors" size={20} />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search PRs, Commits, Decisions, and Conflicts..."
+                className="w-full pl-12 pr-10 py-3 bg-white border border-slate-200 rounded-xl shadow-sm focus:border-accent-blue focus:ring-4 focus:ring-accent-blue/10 outline-none transition-all text-slate-900 placeholder:text-slate-400"
+              />
+              {query && (
+                <button 
+                  onClick={() => setQuery('')}
+                  className="absolute right-4 text-slate-400 hover:text-slate-600"
+                >
+                  <X size={18} />
+                </button>
+              )}
+            </div>
+            
+            {/* Search Results Dropdown/Overlay */}
+            {query.trim() && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden">
+                {isSearching ? (
+                  <div className="p-6 text-center text-slate-500 text-sm">Searching repository data...</div>
+                ) : searchResults.length > 0 ? (
+                  <div className="max-h-[400px] overflow-y-auto">
+                    {searchResults.map((res, i) => (
+                      <div key={`${res.id}-${i}`} className="p-4 border-b border-slate-100 last:border-0 hover:bg-slate-50 transition-colors">
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-slate-100 text-slate-500">
+                                {res.type.replace('_', ' ')}
+                              </span>
+                              <span className="text-xs text-slate-400">
+                                {new Date(res.date).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <h4 className="text-sm font-bold text-slate-900 mb-1 leading-snug">{res.title}</h4>
+                            <p className="text-xs text-slate-600 line-clamp-2">{res.description}</p>
+                          </div>
+                          {res.url && (
+                            <a href={res.url} target="_blank" rel="noreferrer" className="shrink-0 text-xs text-accent-blue hover:underline bg-accent-blue/10 px-3 py-1.5 rounded-lg font-medium mt-1">
+                              View Link
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-6 text-center text-slate-500 text-sm">No results found for &quot;{query}&quot;</div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Conflict Banner */}
-          {latestConflict && (
+          {latestConflict && !query && (
             <div className="mb-8 bg-accent-red/10 border border-accent-red/20 rounded-xl p-4 flex items-center justify-between shadow-sm">
               <div className="flex items-center gap-3">
                 <AlertTriangle className="w-5 h-5 text-accent-red" />

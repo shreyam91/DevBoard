@@ -7,6 +7,7 @@ import UserDropdown from './UserDropdown';
 import { Background } from '@/components/landing/Background';
 import { LayoutDashboard, Activity, AlertTriangle, FileCode, GitPullRequest, Settings, Box, ChevronsUpDown, GitMerge, GitCommit, Sparkles, Search } from 'lucide-react';
 import Link from 'next/link';
+import InaccessibleRepoClient from './InaccessibleRepoClient';
 
 export async function generateMetadata({ params }: { params: { repoId: string } }) {
   const repo = await prisma.repo.findUnique({ where: { id: params.repoId } });
@@ -112,9 +113,6 @@ export default async function DashboardLayout({
           <div className="mt-6 mb-2 px-3 flex items-center gap-2">
             <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Development</span>
           </div>
-          <NavLink href={`/dashboard/${repoId}/search`} icon={<Search />}>
-            Semantic Search
-          </NavLink>
           <NavLink href={`/dashboard/${repoId}/prs`} icon={<GitPullRequest />}>
             Pull Requests
           </NavLink>
@@ -142,7 +140,11 @@ export default async function DashboardLayout({
 
       {/* Main content */}
       <main className="flex-1 flex flex-col overflow-hidden relative z-10">
-        {children}
+        {dbRepo?.health_status === 'inaccessible' ? (
+          <InaccessibleRepoClient repoId={repoId} />
+        ) : (
+          children
+        )}
       </main>
       
     </div>

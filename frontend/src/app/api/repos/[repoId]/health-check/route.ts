@@ -44,6 +44,14 @@ export async function POST(
       }
     });
 
+    if (repoRes.status === 404 || repoRes.status === 401) {
+      await prisma.repo.update({
+        where: { id: repoId },
+        data: { health_status: 'inaccessible' }
+      });
+      return NextResponse.json({ error: 'Repository access failed or revoked' }, { status: repoRes.status });
+    }
+
     if (!repoRes.ok) {
       return NextResponse.json({ error: 'Repository access failed' }, { status: 400 });
     }

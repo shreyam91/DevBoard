@@ -3,7 +3,7 @@ import { processArchaeologyJob } from './archaeologyWorker';
 import { processPrAnalysisJob } from './prAnalysisWorker';
 import { processArchitectureUpdateJob } from './architectureWorker';
 import { processScoreCalculationJob } from './scoreWorker';
-import { processSemanticSearchJob } from './semanticSearchWorker';
+import { processRepoSyncJob } from './repoSyncWorker';
 
 console.log('Starting BullMQ workers...');
 
@@ -35,15 +35,29 @@ const architectureScoreWorker = createWorker(QUEUES.ARCHITECTURE_SCORE, async (j
   }
 });
 
-// Semantic Search Worker (Using Embedding Queue)
-const semanticSearchWorker = createWorker(QUEUES.EMBEDDING_GENERATION, async (job) => {
-  if (job.name === 'semantic-search-index') {
-    await processSemanticSearchJob(job);
+// Repo Sync Worker
+const repoSyncWorker = createWorker(QUEUES.REPO_SYNC, async (job) => {
+  if (job.name === 'repo-sync') {
+    await processRepoSyncJob(job);
   }
 });
 
+// Schedule the recurring repo sync job (daily at midnight)
+import { repoSyncQueue } from '@devboard/shared/src/queue';
+(async () => {
+  try {
+    await repoSyncQueue.add('repo-sync', {}, {
+      repeat: { pattern: '0 0 * * *' },
+      jobId: 'daily-repo-sync' // Ensure only one recurring job exists
+    });
+    console.log('Scheduled daily repo sync job.');
+  } catch (err) {
+    console.error('Failed to schedule daily repo sync job:', err);
+  }
+})();
+
 // Common error handling
-[jobsWorker, prAnalysisWorker, architectureUpdateWorker, architectureScoreWorker, semanticSearchWorker].forEach(worker => {
+[jobsWorker, prAnalysisWorker, architectureUpdateWorker, architectureScoreWorker, repoSyncWorker].forEach(worker => {
   worker.on('completed', (job) => {
     console.log(`Job ${job.id} of type ${job.name} completed successfully.`);
   });

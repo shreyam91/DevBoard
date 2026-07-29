@@ -13,11 +13,11 @@ export const QUEUES = {
   DEVBOARD_JOBS: 'devboard-jobs', // Legacy
   WEBHOOK_PROCESSING: 'webhook-processing',
   PR_ANALYSIS: 'pr-analysis',
-  EMBEDDING_GENERATION: 'embedding-generation',
   ARCHITECTURE_UPDATE: 'architecture-update',
   GITHUB_COMMIT: 'github-commit',
   CONFLICT_ANALYSIS: 'conflict-analysis',
   ARCHITECTURE_SCORE: 'architecture-score',
+  REPO_SYNC: 'repo-sync',
 };
 
 // Instantiate queues
@@ -28,8 +28,6 @@ export const webhookQueue = new Queue(QUEUES.WEBHOOK_PROCESSING, { connection })
 // @ts-expect-error
 export const prAnalysisQueue = new Queue(QUEUES.PR_ANALYSIS, { connection });
 // @ts-expect-error
-export const embeddingQueue = new Queue(QUEUES.EMBEDDING_GENERATION, { connection });
-// @ts-expect-error
 export const architectureUpdateQueue = new Queue(QUEUES.ARCHITECTURE_UPDATE, { connection });
 // @ts-expect-error
 export const githubCommitQueue = new Queue(QUEUES.GITHUB_COMMIT, { connection });
@@ -37,6 +35,8 @@ export const githubCommitQueue = new Queue(QUEUES.GITHUB_COMMIT, { connection })
 export const conflictAnalysisQueue = new Queue(QUEUES.CONFLICT_ANALYSIS, { connection });
 // @ts-expect-error
 export const architectureScoreQueue = new Queue(QUEUES.ARCHITECTURE_SCORE, { connection });
+// @ts-expect-error
+export const repoSyncQueue = new Queue(QUEUES.REPO_SYNC, { connection });
 
 // Helper to create a worker
 export function createWorker(queueName: string, processor: Processor, options?: Omit<WorkerOptions, 'connection'>) {

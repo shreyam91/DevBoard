@@ -25,6 +25,11 @@ if (globalForPrisma.prisma) {
   prisma = new PrismaClient({ adapter, log: ['query'] });
 }
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+// Force reload in dev to pick up schema changes
+if (process.env.NODE_ENV !== 'production') {
+  // @ts-ignore
+  delete globalForPrisma.prisma;
+  globalForPrisma.prisma = prisma;
+}
 
 export { prisma };

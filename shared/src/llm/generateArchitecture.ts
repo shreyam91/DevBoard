@@ -75,7 +75,7 @@ Make the markdown well-structured, easy to read, and highly descriptive. Use mar
   };
 
   const response = await ai.chat.completions.create({
-    model: 'openai/gpt-4o',
+    model: 'openai/gpt-4o-mini',
     messages: [
       { role: 'system', content: systemPrompt },
       { role: 'user', content: userPrompt }

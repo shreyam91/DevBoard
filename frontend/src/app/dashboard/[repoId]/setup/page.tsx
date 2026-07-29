@@ -41,8 +41,13 @@ export default async function SetupPage({ params }: { params: { repoId: string }
       });
       const commits = await res.json();
       
-      // Treat as new if less than 5 commits
-      isNewRepo = Array.isArray(commits) && commits.length < 5;
+      // If it's a 409 (Git Repository is empty), or an array with < 5 commits, it's a new repo
+      if (res.status === 409) {
+        isNewRepo = true;
+      } else {
+        isNewRepo = Array.isArray(commits) && commits.length < 5;
+      }
+      
       detected = true;
 
       // Update in DB
