@@ -9,7 +9,7 @@ export default function MarketingFooter() {
         <span className="text-[13px] font-semibold tracking-tight text-slate-400">DevBoard</span>
       </div>
       <div className="flex flex-wrap justify-center gap-6 text-[13px] font-medium text-slate-500">
-        <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 transition-colors">GitHub</a>
+        <a href="https://github.com/shreyam91/DevBoard" target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 transition-colors">GitHub</a>
         <Link href="/privacy" className="hover:text-slate-900 transition-colors">Privacy</Link>
         <Link href="/terms" className="hover:text-slate-900 transition-colors">Terms</Link>
       </div>

@@ -47,11 +47,7 @@ export default function SetupClient({
     );
   }
 
-  if (isNewRepo) {
-    if (initializationStatus === 'in_progress' || isGenerating) {
-      return <GenerationLoader repoId={repoId} />;
-    }
-    
+  if (initializationStatus === 'pending' && !isGenerating) {
     return (
       <Questionnaire 
         repoId={repoId} 
@@ -67,6 +63,10 @@ export default function SetupClient({
         }}
       />
     );
+  }
+
+  if (isNewRepo && (initializationStatus === 'in_progress' || isGenerating)) {
+    return <GenerationLoader repoId={repoId} />;
   }
 
   return (

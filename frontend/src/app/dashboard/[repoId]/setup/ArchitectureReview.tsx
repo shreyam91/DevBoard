@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check, Edit2, Save, FileCode, CheckCircle2, AlertCircle } from 'lucide-react';
 import { approveAndCommitArchitecture } from '@/app/actions/setup';
+import { useRouter } from 'next/navigation';
 
 export default function ArchitectureReview({
   repoId,
@@ -20,11 +21,13 @@ export default function ArchitectureReview({
   const [decisions, setDecisions] = useState(draftDecisions || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingDecision, setEditingDecision] = useState<number | null>(null);
+  const router = useRouter();
 
   const handleApprove = async () => {
     setIsSubmitting(true);
     try {
       await approveAndCommitArchitecture(repoId, jobId, markdown, decisions);
+      router.push(`/dashboard/${repoId}`);
     } catch (error) {
       console.error(error);
       setIsSubmitting(false);

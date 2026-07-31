@@ -18,7 +18,12 @@ export default async function SetupPage({ params }: { params: { repoId: string }
     }
   });
 
-  if (!repo || !repo.user.github_access_token) {
+  const dbAccount = await prisma.account.findFirst({
+    where: { userId: repo.user_id, provider: 'github' },
+    select: { access_token: true }
+  });
+
+  if (!repo || !dbAccount?.access_token) {
     return redirect('/dashboard');
   }
 
@@ -35,7 +40,7 @@ export default async function SetupPage({ params }: { params: { repoId: string }
     try {
       const res = await fetch(`https://api.github.com/repos/${repo.full_name}/commits?per_page=10`, {
         headers: {
-          Authorization: `Bearer ${repo.user.github_access_token}`,
+          Authorization: `Bearer ${dbAccount.access_token}`,
           Accept: 'application/vnd.github.v3+json',
         }
       });

@@ -69,7 +69,8 @@ export default function RepoGridClient({ initialRepos }: { initialRepos: any[] }
               </div>
               <div>
                 <h2 className="text-[16px] font-semibold text-slate-900 line-clamp-1" title={repo.full_name}>
-                  {repo.owner ? `${repo.owner}/` : ''}{repo.name}
+                  {/* {repo.owner ? `${repo.owner}/` : ''} */}
+                  {repo.name}
                 </h2>
                 {repo.last_activity_at && (
                   <p className="text-[11px] text-slate-400 mt-0.5">
@@ -82,7 +83,7 @@ export default function RepoGridClient({ initialRepos }: { initialRepos: any[] }
           
           <div className="text-[13px] text-slate-500 line-clamp-2 mb-auto leading-relaxed">
             {repo.last_commit_message ? (
-              <span className="italic">"{repo.last_commit_message}"</span>
+              <span className="italic">&quot;{repo.last_commit_message}&quot;</span>
             ) : (
               <span>Architectural tracking active for {repo.name}</span>
             )}

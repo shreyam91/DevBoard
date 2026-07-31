@@ -38,15 +38,25 @@ export async function submitQuestionnaire(repoId: string) {
     data: { initialization_status: 'in_progress' }
   });
 
+  const repo = await prisma.repo.findUnique({ where: { id: repoId } });
   const q = await prisma.questionnaire.findUnique({ where: { repo_id: repoId } });
   
-  if (q) {
-    // Generate draft using LLM (runs inline for new repos since no cloning is needed)
-    // For a highly scalable app, we might push this to BullMQ as well.
-    await generateArchitectureDraft(repoId, {
-      source: 'questionnaire',
-      data: q.answers
-    });
+  if (q && repo) {
+    if (repo.is_new_repo) {
+      // Generate draft inline using LLM since no cloning is needed
+      await generateArchitectureDraft(repoId, {
+        source: 'questionnaire',
+        data: q.answers
+      });
+    } else {
+      // Push to BullMQ archaeology worker to analyze the codebase
+      // The worker will now be able to fetch the questionnaire from DB
+      const { devboardQueue } = require('@devboard/shared/src/queue');
+      await devboardQueue.add('archaeology', { 
+        repoId, 
+        full_name: repo.full_name 
+      });
+    }
   }
 
   revalidatePath(`/dashboard/${repoId}/setup`);
@@ -77,13 +87,20 @@ export async function approveAndCommitArchitecture(
   markdown: string,
   decisions: any[]
 ) {
-  const repo = await prisma.repo.findUnique({ where: { id: repoId }, include: { user: true }});
-  if (!repo || !repo.user.github_access_token) throw new Error("Unauthorized");
+  const repo = await prisma.repo.findUnique({ where: { id: repoId } });
+  if (!repo) throw new Error("Repository not found");
+
+  const dbAccount = await prisma.account.findFirst({
+    where: { userId: repo.user_id, provider: 'github' },
+    select: { access_token: true }
+  });
+
+  if (!dbAccount?.access_token) throw new Error("Unauthorized: GitHub token missing");
 
   await commitDraftPipeline(
     repoId,
     jobId,
-    repo.user.github_access_token,
+    dbAccount.access_token,
     markdown,
     decisions
   );

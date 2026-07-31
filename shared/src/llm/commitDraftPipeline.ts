@@ -1,6 +1,7 @@
 import { prisma } from '../prisma';
 import { commitFile } from '../github/commitFile';
 import OpenAI from 'openai';
+import crypto from 'crypto';
 
 export async function commitDraftPipeline(
   repoId: string,
@@ -65,25 +66,31 @@ export async function commitDraftPipeline(
     });
 
     // Insert Decisions and Embeddings
+    const validCategories = ['database', 'infra', 'api', 'architecture', 'tooling'];
+
     for (const dec of decisionsWithEmbeddings) {
+      const normalizedCat = String(dec.category || '').toLowerCase();
+      const finalCategory = validCategories.includes(normalizedCat) ? normalizedCat : 'architecture';
+
       const decision = await tx.decision.create({
         data: {
           repo_id: repoId,
           title: dec.title,
           rationale: dec.rationale,
-          category: dec.category,
+          category: finalCategory,
           source: dec.source || 'archaeology',
           confirmed_by_user: true,
         }
       });
       
       // pgvector raw query for embedding
+      const vectorString = `[${dec.embedding.join(',')}]`;
       await tx.$executeRaw`
         INSERT INTO decision_embeddings (id, decision_id, vector)
         VALUES (
           ${crypto.randomUUID()},
           ${decision.id},
-          ${dec.embedding}::vector
+          ${vectorString}::vector
         )
       `;
     }

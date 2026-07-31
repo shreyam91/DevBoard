@@ -61,12 +61,20 @@ export async function processArchaeologyJob(job: Job) {
       }
     });
 
+    // Fetch questionnaire if available to inject user business context
+    const questionnaire = await prisma.questionnaire.findUnique({
+      where: { repo_id: repoId }
+    });
+
     // 3. Execute Draft Pipeline (instead of committing directly)
     await generateArchitectureDraft(
       repoId,
       {
         source: 'archaeology',
-        data: contextData,
+        data: {
+          archaeology_context: contextData,
+          user_questionnaire_answers: questionnaire?.answers || {}
+        },
       }
     );
 

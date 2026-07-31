@@ -16,80 +16,38 @@ export interface Question {
   placeholder?: string;
 }
 
-const QUESTIONS: Question[] = [
+const BASE_QUESTIONS: Question[] = [
   {
-    id: 'project_type',
-    title: 'What are you building?',
-    subtitle: 'This helps us generate architecture recommendations.',
-    type: 'single_select',
-    options: ['SaaS Application', 'AI Application', 'E-commerce', 'Internal Tool', 'Mobile Backend', 'Developer Tool', 'Open Source Project', 'Portfolio', 'Other']
-  },
-  {
-    id: 'primary_goal',
-    title: 'What is your primary goal?',
-    type: 'single_select',
-    options: ['MVP', 'Production Product', 'Enterprise Software', 'Client Project', 'Learning Project', 'Open Source']
-  },
-  {
-    id: 'user_scale',
-    title: 'Expected user scale?',
-    type: 'single_select',
-    options: ['Under 1,000', '1k–10k', '10k–100k', '100k+', 'Not Sure']
-  },
-  {
-    id: 'frontend',
-    title: 'Frontend framework',
-    type: 'single_select',
-    options: ['Next.js', 'React', 'Vue', 'Angular', 'Svelte', 'No Frontend', 'Other']
-  },
-  {
-    id: 'backend',
-    title: 'Backend',
-    type: 'single_select',
-    options: ['Next.js API', 'Express', 'NestJS', 'FastAPI', 'Django', 'Spring Boot', 'Go', 'Serverless', 'Other']
-  },
-  {
-    id: 'database',
-    title: 'Preferred database',
-    type: 'single_select',
-    options: ['PostgreSQL', 'MySQL', 'MongoDB', 'SQLite', 'Supabase', 'Firebase', 'DynamoDB', "Haven't Decided"]
-  },
-  {
-    id: 'authentication',
-    title: 'Authentication',
-    type: 'single_select',
-    options: ['Auth.js / NextAuth', 'Clerk', 'Firebase Auth', 'Supabase Auth', 'Auth0', 'JWT', 'OAuth Only', 'No Authentication']
-  },
-  {
-    id: 'deployment',
-    title: 'Deployment platform',
-    type: 'single_select',
-    options: ['Vercel', 'Railway', 'AWS', 'Google Cloud', 'Azure', 'Docker', 'Kubernetes', 'DigitalOcean', 'Not Decided']
-  },
-  {
-    id: 'team_size',
-    title: 'Team size',
-    type: 'single_select',
-    options: ['Solo Developer', '2–5 Developers', '5–20 Developers', '20+ Developers']
-  },
-  {
-    id: 'architecture',
-    title: 'Preferred architecture',
-    type: 'single_select',
-    options: ['Monolith', 'Modular Monolith', 'Microservices', 'Serverless', 'Monorepo', 'Multi Repository', 'Not Sure']
-  },
-  {
-    id: 'priorities',
-    title: 'What matters most?',
-    subtitle: 'Allow multiple selections.',
-    type: 'multi_select',
-    options: ['Fast Development', 'Scalability', 'Maintainability', 'Performance', 'Security', 'Low Cost', 'Reliability', 'Developer Experience']
-  },
-  {
-    id: 'additional_notes',
-    title: 'Anything else the AI should know?',
+    id: 'project_purpose',
+    title: 'What is the primary business purpose of this project?',
+    subtitle: 'Describe what problem it solves.',
     type: 'textarea',
-    placeholder: 'Examples:\n• Must support multi-tenancy\n• GDPR compliance required\n• Offline-first\n• AI-heavy workloads\n• HIPAA compliance\n• API-first product\n• Budget constraints'
+    placeholder: 'e.g. A B2B SaaS platform that helps dentists manage patient appointments...'
+  },
+  {
+    id: 'core_features',
+    title: 'What are the absolute core features?',
+    subtitle: 'List 3-5 non-negotiable features for MVP.',
+    type: 'textarea',
+    placeholder: '1. User authentication\n2. Real-time calendar syncing\n3. Automated SMS reminders'
+  },
+  {
+    id: 'data_sensitivity',
+    title: 'Does this project handle sensitive data?',
+    type: 'single_select',
+    options: ['No sensitive data', 'PII (Personal Identifiable Information)', 'PHI (Health Data - HIPAA)', 'Financial Data (PCI)', 'Highly Classified']
+  },
+  {
+    id: 'expected_traffic',
+    title: 'What is the expected traffic pattern?',
+    type: 'single_select',
+    options: ['Steady, predictable traffic', 'Highly spiky (e.g. ticket sales)', 'Low internal traffic', 'Global high-throughput']
+  },
+  {
+    id: 'key_integrations',
+    title: 'Will you rely heavily on third-party integrations?',
+    type: 'multi_select',
+    options: ['Payment Gateways (Stripe, etc.)', 'LLMs/AI APIs', 'CRM/ERP Systems', 'Social Logins', 'Email/SMS Providers', 'Legacy Systems']
   }
 ];
 
@@ -102,8 +60,11 @@ export default function Questionnaire({
   initialAnswers: any;
   onSubmit: (answers: any) => void;
 }) {
+  const [questions, setQuestions] = useState<Question[]>(BASE_QUESTIONS);
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>(initialAnswers || {});
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const [hasGeneratedFollowUps, setHasGeneratedFollowUps] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Keyboard navigation
@@ -113,7 +74,7 @@ export default function Questionnaire({
       if (e.key === 'Enter' && e.target instanceof HTMLTextAreaElement) return;
 
       if (e.key === 'Enter') {
-        const question = QUESTIONS[currentStep];
+        const question = questions[currentStep];
         if (question && question.type === 'single_select' && answers[question.id]) {
           handleNext();
         } else if (question && question.type === 'multi_select' && answers[question.id]?.length > 0) {
@@ -126,9 +87,40 @@ export default function Questionnaire({
   }, [currentStep, answers]);
 
   const handleNext = async () => {
-    if (currentStep < QUESTIONS.length) {
+    if (currentStep < questions.length - 1) {
       setCurrentStep(s => s + 1);
       await saveQuestionnaireDraft(repoId, answers).catch(console.error);
+    } else if (currentStep === questions.length - 1) {
+      if (!hasGeneratedFollowUps) {
+        setIsGeneratingQuestions(true);
+        try {
+          const res = await fetch(`/api/repos/${repoId}/setup/interview`, {
+            method: 'POST',
+            body: JSON.stringify({ answers })
+          });
+          const data = await res.json();
+          if (data.questions && data.questions.length > 0) {
+            const aiQuestions = data.questions.map((q: any) => ({
+              id: q.id,
+              title: q.title,
+              type: 'textarea',
+              placeholder: q.placeholder || 'Your answer...',
+              subtitle: '✨ AI Generated Follow-up'
+            }));
+            setQuestions(prev => [...prev, ...aiQuestions]);
+          }
+        } catch (e) {
+          console.error('Failed to generate interview questions', e);
+        } finally {
+          setHasGeneratedFollowUps(true);
+          setIsGeneratingQuestions(false);
+          setCurrentStep(s => s + 1);
+          await saveQuestionnaireDraft(repoId, answers).catch(console.error);
+        }
+      } else {
+        setCurrentStep(s => s + 1);
+        await saveQuestionnaireDraft(repoId, answers).catch(console.error);
+      }
     }
   };
 
@@ -175,64 +167,65 @@ export default function Questionnaire({
 
         <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm mb-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Repository Type</p>
-              <p className="text-gray-900">{answers['project_type'] || '—'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Frontend</p>
-              <p className="text-gray-900">{answers['frontend'] || '—'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Backend</p>
-              <p className="text-gray-900">{answers['backend'] || '—'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Database</p>
-              <p className="text-gray-900">{answers['database'] || '—'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Authentication</p>
-              <p className="text-gray-900">{answers['authentication'] || '—'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Deployment</p>
-              <p className="text-gray-900">{answers['deployment'] || '—'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Architecture</p>
-              <p className="text-gray-900">{answers['architecture'] || '—'}</p>
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500 mb-1">Priorities</p>
-              <div className="flex flex-wrap gap-1.5 mt-1.5">
-                {(answers['priorities'] || []).map((p: string) => (
-                  <span key={p} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
-                    {p}
-                  </span>
-                ))}
-                {(!answers['priorities'] || answers['priorities'].length === 0) && '—'}
-              </div>
-            </div>
+            {Object.entries(answers).map(([key, val]) => {
+              const q = questions.find(q => q.id === key);
+              if (!q || !val || (Array.isArray(val) && val.length === 0)) return null;
+              return (
+                <div key={key} className={q.type === 'textarea' ? "col-span-1 md:col-span-2 pt-4 border-t border-gray-100" : ""}>
+                  <div className="flex items-start justify-between gap-4 mb-1">
+                    <p className="text-sm font-medium text-gray-500">{q.title}</p>
+                    <button 
+                      onClick={() => setCurrentStep(questions.findIndex(x => x.id === key))}
+                      className="text-xs font-medium text-blue-600 hover:text-blue-700 whitespace-nowrap bg-blue-50 px-2 py-1 rounded-md"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                  {Array.isArray(val) ? (
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {val.map((p: string) => (
+                        <span key={p} className="px-2 py-0.5 bg-gray-100 text-gray-700 rounded-md text-xs font-medium">
+                          {p}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-900 whitespace-pre-wrap text-sm leading-relaxed">{val}</p>
+                  )}
+                </div>
+              );
+            })}
           </div>
-          
-          {(answers['additional_notes']?.trim()) && (
-            <div className="pt-6 border-t border-gray-100">
-              <p className="text-sm font-medium text-gray-500 mb-2">Additional Notes</p>
-              <p className="text-gray-900 whitespace-pre-wrap text-sm leading-relaxed">{answers['additional_notes']}</p>
-            </div>
-          )}
         </div>
       </motion.div>
     );
   };
 
   const renderQuestion = () => {
-    if (currentStep === QUESTIONS.length) {
+    if (isGeneratingQuestions) {
+      return (
+        <motion.div
+          key="generating"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center justify-center py-20"
+        >
+          <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-6">
+            <Sparkles className="w-8 h-8 text-blue-600 animate-pulse" />
+          </div>
+          <h2 className="text-2xl font-semibold text-gray-900 mb-2">Analyzing your answers...</h2>
+          <p className="text-gray-500 text-center max-w-sm">
+            AI is preparing a few specific follow-up questions about your architecture.
+          </p>
+        </motion.div>
+      );
+    }
+
+    if (currentStep === questions.length) {
       return renderSummary();
     }
 
-    const question = QUESTIONS[currentStep];
+    const question = questions[currentStep];
 
     return (
       <motion.div
@@ -313,7 +306,7 @@ export default function Questionnaire({
     );
   };
 
-  const progressPercentage = (currentStep / QUESTIONS.length) * 100;
+  const progressPercentage = (currentStep / questions.length) * 100;
 
   return (
     <div className="flex-1 flex flex-col min-h-[600px] bg-white relative" ref={containerRef}>
@@ -327,11 +320,11 @@ export default function Questionnaire({
         />
       </div>
 
-      <div className="flex-1 flex flex-col justify-center px-6 py-12">
-        <div className="w-full">
-          {currentStep < QUESTIONS.length && (
+      <div className="flex-1 overflow-y-auto px-6 py-12 flex flex-col">
+        <div className="w-full my-auto">
+          {currentStep < questions.length && !isGeneratingQuestions && (
             <div className="max-w-2xl mx-auto mb-8 text-sm font-medium tracking-wider text-blue-600 uppercase">
-              Step {currentStep + 1} of {QUESTIONS.length}
+              Step {currentStep + 1} of {questions.length}
             </div>
           )}
           <AnimatePresence mode="wait">
@@ -351,17 +344,19 @@ export default function Questionnaire({
           Back
         </button>
 
-        {currentStep === QUESTIONS.length ? (
+        {currentStep === questions.length ? (
           <button
             onClick={() => onSubmit(answers)}
             className="flex items-center gap-2 px-8 py-3.5 text-base font-medium text-white bg-black rounded-xl hover:bg-gray-800 transition-all shadow-md hover:shadow-lg active:scale-95"
           >
-            Generate ARCHITECTURE.md
+            Approve & Generate Architecture
             <Sparkles className="w-4 h-4 ml-1" />
           </button>
+        ) : isGeneratingQuestions ? (
+           <div /> 
         ) : (
           <div className="flex items-center gap-4">
-            {(QUESTIONS[currentStep]?.type === 'textarea' || QUESTIONS[currentStep]?.type === 'multi_select') && (
+            {(questions[currentStep]?.type === 'textarea' || questions[currentStep]?.type === 'multi_select') && (
               <button
                 onClick={() => handleNext()}
                 className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors px-4 py-2"
@@ -372,7 +367,7 @@ export default function Questionnaire({
             <button
               onClick={handleNext}
               disabled={
-                QUESTIONS[currentStep]?.type === 'single_select' && !answers[QUESTIONS[currentStep].id]
+                questions[currentStep]?.type === 'single_select' && !answers[questions[currentStep].id]
               }
               className="flex items-center gap-2 px-8 py-3 text-base font-medium text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-all shadow-sm active:scale-95"
             >

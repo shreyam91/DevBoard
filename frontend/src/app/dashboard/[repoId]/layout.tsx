@@ -100,7 +100,7 @@ export default async function DashboardLayout({
           <div className="mt-6 mb-2 px-3 flex items-center gap-2">
             <span className="text-[10px] uppercase text-slate-400 font-bold tracking-widest">Architecture</span>
           </div>
-          <NavLink href={`/dashboard/${repoId}/architecture`} icon={<Box />}>
+          <NavLink href={`/dashboard/${repoId}/architecture`} icon={<Box />} exact>
             Interactive Graph
           </NavLink>
           <NavLink href={`/dashboard/${repoId}/architecture-review`} icon={<Sparkles />}>
