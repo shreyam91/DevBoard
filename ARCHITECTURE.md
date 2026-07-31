@@ -1,81 +1,65 @@
 # ARCHITECTURE.md
 
 ## Executive Summary
-The purpose of this document is to outline the architecture of the system designed to provide a robust, scalable, and efficient solution for [insert system purpose here]. The goals include ensuring high availability, maintaining data integrity, and providing a seamless user experience across various platforms.
+The purpose of this system is to provide a modern web application that leverages the latest technologies to deliver a responsive and user-friendly experience. The goals include enhancing user engagement through a seamless interface, ensuring maintainability through a robust architecture, and enabling scalability to accommodate future growth.
 
 ## System Context & Architecture Overview
-The system is composed of several key components:
+The architecture consists of the following high-level components:
 
-- **Frontend**: A responsive web application built using React.js that interacts with the backend via RESTful APIs.
-- **Backend**: A microservices architecture implemented in Node.js, responsible for business logic and data processing.
-- **Database**: A combination of SQL (PostgreSQL) for structured data and NoSQL (MongoDB) for unstructured data.
-- **Third-party Integrations**: Integration with external services such as payment gateways, authentication providers, and analytics tools.
+- **Frontend**: Built with **Next.js** and styled using **Tailwind CSS**, providing a dynamic and responsive user interface.
+- **Backend**: A server-side application that utilizes **TypeScript** for type safety and **Prisma** as an ORM for database interactions.
+- **Database**: A relational database managed through Prisma, ensuring efficient data management and retrieval.
+- **Third-party Integrations**: Potential integrations with external APIs for additional functionalities (e.g., payment processing, analytics).
 
-### Component Diagram Description
+### Component Diagram
 ```plaintext
-+-------------------+       +-------------------+
-|     Frontend      | <-->  |      Backend      |
-|   (React.js)     |       |   (Node.js)      |
-+-------------------+       +-------------------+
-         |                           |
-         |                           |
-         |                           |
-         |                           |
-+-------------------+       +-------------------+
-|   SQL Database     |       |   NoSQL Database   |
-|   (PostgreSQL)    |       |   (MongoDB)       |
-+-------------------+       +-------------------+
-         |                           |
-         |                           |
-+-------------------+       +-------------------+
-|   Third-party     |       |   Caching Layer    |
-|   Integrations    |       |   (Redis)         |
-+-------------------+       +-------------------+
++-------------------+       +-------------------+       +-------------------+
+|   Frontend (UI)   | <--> |   Backend (API)   | <--> |   Database (DB)   |
+|  Next.js + Tailwind|       |   TypeScript +   |       |   Prisma ORM      |
+|                   |       |   Prisma         |       |                   |
++-------------------+       +-------------------+       +-------------------+
 ```  
 
 ## Core Technologies
-| Component         | Technology       | Rationale                                                                 |
-|-------------------|------------------|---------------------------------------------------------------------------|
-| Frontend          | React.js         | Provides a dynamic and responsive user interface with a component-based architecture.
-| Backend           | Node.js          | Non-blocking I/O model suitable for handling multiple requests concurrently.
-| Database          | PostgreSQL       | Relational database for structured data with ACID compliance.
-|                   | MongoDB          | Document-based database for flexible schema and unstructured data storage.
-| Caching           | Redis            | In-memory data structure store to improve performance and reduce database load.
-| Authentication    | OAuth 2.0        | Industry-standard protocol for secure authorization.
-| Deployment        | Docker           | Containerization for consistent deployment across environments.
+| Technology      | Purpose                                      | Rationale                                                                 |
+|------------------|----------------------------------------------|---------------------------------------------------------------------------|
+| Next.js          | Frontend framework for server-side rendering | Provides SEO benefits and fast initial load times.                       |
+| Tailwind CSS     | CSS framework for styling                    | Enables rapid UI development with utility-first CSS classes.             |
+| TypeScript       | Programming language                         | Enhances code quality and maintainability through static typing.         |
+| Prisma           | ORM for database interactions                | Simplifies database access and provides type safety for queries.         |
 
 ## Data Flow & Communication
-- **Frontend to Backend**: Communication is established via RESTful APIs, allowing for CRUD operations and data retrieval.
-- **Backend to Database**: The backend services communicate with the databases using ORM (Sequelize for PostgreSQL and Mongoose for MongoDB).
-- **Caching**: Frequently accessed data is stored in Redis to minimize database queries and enhance performance.
-- **Third-party Services**: Integration with external APIs is handled asynchronously to avoid blocking the main application flow.
+Data flows through the system primarily via RESTful APIs. The frontend communicates with the backend using HTTP requests, while the backend interacts with the database through Prisma. The communication flow is as follows:
+1. User interacts with the frontend UI.
+2. Frontend sends an HTTP request to the backend API.
+3. Backend processes the request, interacts with the database via Prisma, and returns a response.
+4. Frontend updates the UI based on the response.
 
 ## Key Architectural Patterns
-- **Microservices**: The system is designed as a collection of loosely coupled services, each responsible for a specific business capability, allowing for independent deployment and scaling.
-- **Event-Driven Architecture**: Utilizes message queues (e.g., RabbitMQ) for communication between services, enabling asynchronous processing and decoupling.
-- **MVC (Model-View-Controller)**: The frontend follows the MVC pattern to separate concerns and improve maintainability.
+- **Microservices**: Although the current architecture is monolithic, it is designed to be modular, allowing for future separation into microservices as the application scales.
+- **MVC (Model-View-Controller)**: The application follows the MVC pattern, where the frontend acts as the View, the backend as the Controller, and the database as the Model.
+- **Clean Architecture**: The separation of concerns is maintained, ensuring that business logic is independent of the UI and database layers.
 
 ## Data Storage & Strategy
-- **Database Schemas**: 
-  - **PostgreSQL**: Tables for users, transactions, and product information with relationships defined through foreign keys.
-  - **MongoDB**: Collections for logs, user activity, and other unstructured data.
-- **Caching Layer**: Redis is used to cache frequently accessed data such as user sessions and product listings to enhance performance.
+- **Database Schema**: The database schema will be defined using Prisma's schema definition language, allowing for easy migrations and type-safe queries.
+- **Caching Layer**: Consider implementing a caching layer (e.g., Redis) for frequently accessed data to improve performance.
+- **Storage Rationale**: A relational database is chosen for its ability to handle complex queries and relationships between data entities.
 
 ## Security & Authentication
-- **Data Security**: All sensitive data is encrypted both in transit (using HTTPS) and at rest (using database encryption features).
-- **Authentication**: OAuth 2.0 is implemented for user authentication, allowing secure access to resources and third-party integrations.
-- **Authorization**: Role-based access control (RBAC) is enforced to restrict access to sensitive operations based on user roles.
+- **Data Security**: All data in transit will be secured using HTTPS. Sensitive data will be encrypted in the database.
+- **Authentication**: Implement JWT (JSON Web Tokens) for user authentication, ensuring secure access to the API endpoints.
+- **Authorization**: Role-based access control (RBAC) will be enforced to manage user permissions effectively.
 
 ## Scalability & Performance
-- **Bottlenecks**: Potential bottlenecks include database queries and API response times. Caching strategies and database indexing are employed to mitigate these issues.
-- **Scaling Strategies**: Horizontal scaling of microservices is facilitated through container orchestration (Kubernetes) to manage load effectively.
-- **Performance Considerations**: Regular performance testing and monitoring are conducted to identify and resolve issues proactively.
+- **Bottlenecks**: Potential bottlenecks include database queries and API response times. Monitoring tools will be implemented to identify and address these issues.
+- **Scaling Strategies**: Horizontal scaling of the backend services and database replication will be considered as user demand increases.
+- **Performance Considerations**: Optimize API responses and database queries to minimize latency and improve user experience.
 
 ## Deployment & DevOps
-- **CI/CD Pipeline**: Automated deployment pipeline using GitHub Actions for continuous integration and delivery, ensuring code quality and rapid deployment.
-- **Hosting**: The application is hosted on AWS, utilizing services such as EC2 for compute, RDS for managed databases, and S3 for static file storage.
-- **Infrastructure Overview**: Infrastructure as Code (IaC) is implemented using Terraform to manage cloud resources efficiently and reproducibly.
+- **CI/CD Pipeline**: A CI/CD pipeline will be established using tools like GitHub Actions or CircleCI to automate testing and deployment processes.
+- **Hosting**: The application will be hosted on cloud platforms such as Vercel (for frontend) and AWS or DigitalOcean (for backend and database).
+- **Infrastructure Overview**: Containerization using Docker will be considered for consistent deployment across environments.
 
 ---
 
-This document serves as a comprehensive guide to the architecture of the system, outlining the key components, technologies, and strategies employed to achieve the desired outcomes.
+This document serves as a comprehensive overview of the architecture for the web application, outlining the key components, technologies, and strategies employed to ensure a robust and scalable system.
