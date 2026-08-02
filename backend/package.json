@@ -7,8 +7,7 @@
     "dev": "tsx watch --env-file=../frontend/.env src/workers/index.ts"
   },
   "dependencies": {
-    "@devboard/shared": "*",
-    "octokit": "^5.0.5"
+    "@devboard/shared": "*"
   },
   "devDependencies": {
     "tsx": "^4.22.4",

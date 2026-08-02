@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@clerk/nextjs/server';
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import { prisma } from '@devboard/shared/src/prisma';
 import { jobsQueue } from '@devboard/shared/src/queue';
 
@@ -8,8 +9,8 @@ export async function POST(
   { params }: { params: { repoId: string } }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -20,20 +21,17 @@ export async function POST(
       return NextResponse.json({ error: 'Repository not found' }, { status: 404 });
     }
 
-    if (repo.user_id !== session.user.id) {
+    if (repo.user_id !== userId) {
       return NextResponse.json({ error: 'Unauthorized access to repository' }, { status: 403 });
     }
 
-    const dbAccount = await prisma.account.findFirst({
-      where: { userId: session.user.id, provider: 'github' },
-      select: { access_token: true }
-    });
+    const github_access_token = await getGithubToken(userId);
 
-    if (!dbAccount?.access_token) {
+    if (!github_access_token) {
       return NextResponse.json({ error: 'No GitHub token found' }, { status: 400 });
     }
 
-    const github_access_token = dbAccount.access_token;
+    
     const full_name = repo.full_name;
 
     // 1. Check Repository Access

@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@devboard/shared/src/prisma';
-import { auth } from '@/auth';
+import { auth } from '@clerk/nextjs/server';
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const { userId } = await auth();
+    if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -19,7 +20,7 @@ export async function PATCH(
     include: { repo: true }
   });
 
-  if (!decision || decision.repo.user_id !== session.user.id) {
+  if (!decision || decision.repo.user_id !== userId) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 

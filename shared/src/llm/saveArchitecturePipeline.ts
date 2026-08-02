@@ -60,13 +60,18 @@ export async function executeArchitecturePipeline(
     });
 
     // Insert Decisions with pgvector
+    const validCategories = ['database', 'infra', 'api', 'architecture', 'tooling'];
+
     for (const dec of decisionsWithEmbeddings) {
+      const normalizedCat = String(dec.category || '').toLowerCase();
+      const finalCategory = validCategories.includes(normalizedCat) ? normalizedCat : 'architecture';
+
       const decision = await tx.decision.create({
         data: {
           repo_id: repoId,
           title: dec.title,
           rationale: dec.rationale,
-          category: dec.category,
+          category: finalCategory as any,
           source: dec.source,
           confirmed_by_user: false,
         }

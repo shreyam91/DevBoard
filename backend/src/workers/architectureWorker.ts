@@ -1,3 +1,4 @@
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import { Job } from 'bullmq';
 import { prisma } from '@devboard/shared/src/prisma';
 import OpenAI from 'openai';
@@ -23,7 +24,7 @@ async function pushToGitHub(repoFullName: string, token: string, path: string, c
       sha = data.sha;
     }
   } catch (e) {
-    console.warn(`File ${path} not found on GitHub, creating new one.`);
+    // console.warn(`File ${path} not found on GitHub, creating new one.`);
   }
 
   const encodedContent = Buffer.from(content).toString('base64');
@@ -52,7 +53,7 @@ async function pushToGitHub(repoFullName: string, token: string, path: string, c
     const errText = await putRes.text();
     // Some repos might use master instead of main. Fallback to master if 422 or 404
     if (putRes.status === 422 || putRes.status === 404) {
-       console.log(`Failed to push to main, trying master...`);
+      //  console.log(`Failed to push to main, trying master...`);
        payload.branch = 'master';
        const retryRes = await fetch(`https://api.github.com/repos/${repoFullName}/contents/${path}`, {
          method: 'PUT',
@@ -86,7 +87,7 @@ export async function processArchitectureUpdateJob(job: Job) {
   if (pending.status !== 'pending') throw new Error(`Pending decision is already ${pending.status}`);
 
   const repo = pending.repo;
-  const token = repo.user.github_access_token || repo.user.accounts.find(a => a.provider === 'github')?.access_token;
+  const token = await getGithubToken(repo.user_id);
   if (!token) throw new Error('GitHub token missing');
 
   // 1. Generate Embedding
@@ -141,7 +142,7 @@ Please rewrite the ARCHITECTURE.md to seamlessly integrate this new decision.`;
   // 3. GitHub Push
   await pushToGitHub(
     repo.full_name,
-    repo.user.github_access_token,
+    await getGithubToken(repo.user_id),
     'ARCHITECTURE.md',
     newArchContent,
     `docs: Update ARCHITECTURE.md based on PR #${pending.pr_number}`
@@ -191,5 +192,5 @@ Please rewrite the ARCHITECTURE.md to seamlessly integrate this new decision.`;
   const { architectureScoreQueue } = await import('@devboard/shared/src/queue');
   await architectureScoreQueue.add('architecture-score', { repoId: repo.id });
 
-  console.log(`Successfully approved pending decision ${pendingDecisionId} and updated ARCHITECTURE.md`);
+  // console.log(`Successfully approved pending decision ${pendingDecisionId} and updated ARCHITECTURE.md`);
 }

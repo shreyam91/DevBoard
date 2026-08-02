@@ -1,6 +1,6 @@
 import React from 'react';
 import { prisma } from '@devboard/shared/src/prisma';
-import { auth } from '@/auth';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import OverviewClient from './OverviewClient';
 import { Plus, FileCode, CheckCircle2 } from 'lucide-react';
 import SyncButton from './SyncButton';
@@ -9,7 +9,8 @@ import Link from 'next/link';
 export default async function DashboardOverview({ params }: { params: { repoId: string } }) {
   const { repoId } = params;
 
-  const session = await auth();
+  const { userId } = await auth();
+  const user = await currentUser();
   
   const rawDecisions = await prisma.decision.findMany({
     where: { repo_id: repoId },

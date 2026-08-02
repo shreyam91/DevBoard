@@ -1,3 +1,4 @@
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import { Job } from 'bullmq';
 import { prisma } from '@devboard/shared/src/prisma';
 
@@ -19,12 +20,9 @@ export async function processRepoSyncJob(job: Job) {
     for (const repo of activeRepos) {
       try {
         // Find the owner's github token
-        const dbAccount = await prisma.account.findFirst({
-          where: { userId: repo.user_id, provider: 'github' },
-          select: { access_token: true }
-        });
+        const github_access_token = await getGithubToken(repo.user_id);
 
-        if (!dbAccount?.access_token) {
+        if (!github_access_token) {
           console.warn(`No GitHub token found for user ${repo.user_id} (Repo: ${repo.full_name})`);
           continue;
         }

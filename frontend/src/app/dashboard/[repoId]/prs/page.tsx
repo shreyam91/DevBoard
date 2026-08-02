@@ -1,27 +1,24 @@
 import React from 'react';
 import { prisma } from '@devboard/shared/src/prisma';
-import { auth } from '@/auth';
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { GitPullRequest, GitMerge, GitCommit } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 export default async function PRsPage({ params }: { params: { repoId: string } }) {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/login');
+  const { userId } = await auth();
+  const user = await currentUser();
+  if (!userId) redirect('/sign-in');
 
   const repo = await prisma.repo.findUnique({
-    where: { id: params.repoId, user_id: session.user.id }
+    where: { id: params.repoId, user_id: userId }
   });
 
   if (!repo) redirect('/dashboard');
 
-  const dbAccount = await prisma.account.findFirst({
-    where: { userId: session.user.id, provider: 'github' },
-    select: { access_token: true }
-  });
-
-  const token = dbAccount?.access_token;
+  const token = await getGithubToken(userId);
   if (!token) return <div>No GitHub token found</div>;
 
   const [owner, name] = repo.full_name.split('/');

@@ -32,7 +32,7 @@ export function Hero() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto relative">
-            <Link href="/login" className="group relative flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3.5 rounded-lg bg-black text-white font-medium hover:scale-[1.02] active:scale-[0.98] shadow-md transition-all">
+            <Link href="/sign-in" className="group relative flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3.5 rounded-lg bg-black text-white font-medium hover:scale-[1.02] active:scale-[0.98] shadow-md transition-all">
               <span className="text-[14px]">Connect GitHub</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </Link>

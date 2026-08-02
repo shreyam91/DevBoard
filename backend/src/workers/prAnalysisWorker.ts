@@ -1,3 +1,4 @@
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import { Job } from 'bullmq';
 import { prisma } from '@devboard/shared/src/prisma';
 import OpenAI from 'openai';
@@ -56,7 +57,7 @@ export async function processPrAnalysisJob(job: Job) {
   if (!repo) {
     throw new Error('Repo not found');
   }
-  const token = repo.user.github_access_token || repo.user.accounts.find(a => a.provider === 'github')?.access_token;
+  const token = await getGithubToken(repo.user_id);
   if (!token) {
     throw new Error('GitHub token not found');
   }

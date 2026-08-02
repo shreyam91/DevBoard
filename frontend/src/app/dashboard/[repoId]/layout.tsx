@@ -1,6 +1,6 @@
 import React from 'react';
 import { prisma } from '@devboard/shared/src/prisma';
-import { auth } from '@/auth';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import NavLink from './NavLink';
 import UserDropdown from './UserDropdown';
@@ -23,9 +23,9 @@ export default async function DashboardLayout({
   children: React.ReactNode;
   params: { repoId: string };
 }) {
-  const session = await auth();
-  if (!session?.user) {
-    redirect('/login');
+  const { userId } = await auth();
+    if (!userId) {
+    redirect('/sign-in');
   }
   const { repoId } = params;
   
@@ -35,7 +35,7 @@ export default async function DashboardLayout({
   const activeRepo = { 
     id: repoId, 
     name: dbRepo ? dbRepo.full_name : repoId, 
-    user_id: session.user.id 
+    user_id: userId 
   };
   
   const unresolvedConflictsCount = await prisma.conflict.count({
@@ -135,7 +135,9 @@ export default async function DashboardLayout({
         </nav>
         
         {/* User profile snippet */}
-        <UserDropdown user={session.user} />
+        <div className="mt-auto">
+          <UserDropdown />
+        </div>
       </aside>
 
       {/* Main content */}

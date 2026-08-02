@@ -1,4 +1,4 @@
-import { auth } from '@/auth';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@devboard/shared/src/prisma';
 import { notFound, redirect } from 'next/navigation';
 import PendingClient from './PendingClient';
@@ -8,14 +8,14 @@ export const metadata = {
 };
 
 export default async function PendingDecisionsPage({ params }: { params: { repoId: string } }) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const { userId } = await auth();
+    if (!userId) {
     redirect('/api/auth/signin');
   }
 
   const { repoId } = params;
   const repo = await prisma.repo.findFirst({
-    where: { id: repoId, user_id: session.user.id },
+    where: { id: repoId, user_id: userId },
   });
 
   if (!repo) {

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { prisma } from '@devboard/shared/src/prisma';
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import SetupClient from './SetupClient';
 
 export default async function SetupPage({ params }: { params: { repoId: string } }) {
@@ -9,7 +10,6 @@ export default async function SetupPage({ params }: { params: { repoId: string }
   const repo = await prisma.repo.findUnique({
     where: { id: repoId },
     include: { 
-      user: true,
       initialization_jobs: {
         orderBy: { created_at: 'desc' },
         take: 1
@@ -18,12 +18,12 @@ export default async function SetupPage({ params }: { params: { repoId: string }
     }
   });
 
-  const dbAccount = await prisma.account.findFirst({
-    where: { userId: repo.user_id, provider: 'github' },
-    select: { access_token: true }
-  });
+  if (!repo) {
+    return redirect('/dashboard');
+  }
 
-  if (!repo || !dbAccount?.access_token) {
+  const token = await getGithubToken(repo.user_id);
+  if (!token) {
     return redirect('/dashboard');
   }
 
@@ -40,7 +40,7 @@ export default async function SetupPage({ params }: { params: { repoId: string }
     try {
       const res = await fetch(`https://api.github.com/repos/${repo.full_name}/commits?per_page=10`, {
         headers: {
-          Authorization: `Bearer ${dbAccount.access_token}`,
+          Authorization: `Bearer ${token}`,
           Accept: 'application/vnd.github.v3+json',
         }
       });

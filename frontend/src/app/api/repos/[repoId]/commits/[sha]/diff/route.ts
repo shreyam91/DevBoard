@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@devboard/shared/src/prisma';
-import { auth } from '@/auth';
+import { auth } from '@clerk/nextjs/server';
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import parseDiff from 'parse-diff';
 
 export async function GET(
@@ -8,25 +9,22 @@ export async function GET(
   { params }: { params: { repoId: string, sha: string } }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const repo = await prisma.repo.findUnique({
-      where: { id: params.repoId, user_id: session.user.id }
+      where: { id: params.repoId, user_id: userId }
     });
 
     if (!repo) {
       return NextResponse.json({ error: 'Repository not found' }, { status: 404 });
     }
 
-    const dbAccount = await prisma.account.findFirst({
-      where: { userId: session.user.id, provider: 'github' },
-      select: { access_token: true }
-    });
+    const github_access_token = await getGithubToken(userId);
 
-    const token = dbAccount?.access_token;
+    const token = github_access_token;
     if (!token) {
       return NextResponse.json({ error: 'No GitHub token found' }, { status: 401 });
     }

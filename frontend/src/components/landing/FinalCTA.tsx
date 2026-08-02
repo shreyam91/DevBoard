@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, GitMerge } from "lucide-react";
-import { Annotation } from "./Doodles";
 
 export function FinalCTA() {
   return (
@@ -28,8 +27,7 @@ export function FinalCTA() {
         </p>
 
         <div className="flex justify-center relative">
-          <Annotation text="Get started" className="absolute -top-8 -right-12 hidden md:block" delay={0.3} />
-          <Link href="/login" className="group flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-black text-white font-medium hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md">
+          <Link href="/sign-in" className="group flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-black text-white font-medium hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md">
             <span className="text-[15px]">Connect GitHub</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>

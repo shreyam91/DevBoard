@@ -1,3 +1,4 @@
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import { createWorker, QUEUES } from '@devboard/shared/src/queue';
 import { processArchaeologyJob } from './archaeologyWorker';
 import { processPrAnalysisJob } from './prAnalysisWorker';
@@ -5,7 +6,7 @@ import { processArchitectureUpdateJob } from './architectureWorker';
 import { processScoreCalculationJob } from './scoreWorker';
 import { processRepoSyncJob } from './repoSyncWorker';
 
-console.log('Starting BullMQ workers...');
+// console.log('Starting BullMQ workers...');
 
 // Legacy Jobs Worker
 const jobsWorker = createWorker(QUEUES.DEVBOARD_JOBS, async (job) => {
@@ -50,21 +51,21 @@ import { repoSyncQueue } from '@devboard/shared/src/queue';
       repeat: { pattern: '0 0 * * *' },
       jobId: 'daily-repo-sync' // Ensure only one recurring job exists
     });
-    console.log('Scheduled daily repo sync job.');
+    // console.log('Scheduled daily repo sync job.');
   } catch (err) {
-    console.error('Failed to schedule daily repo sync job:', err);
+    // console.error('Failed to schedule daily repo sync job:', err);
   }
 })();
 
 // Common error handling
 [jobsWorker, prAnalysisWorker, architectureUpdateWorker, architectureScoreWorker, repoSyncWorker].forEach(worker => {
   worker.on('completed', (job) => {
-    console.log(`Job ${job.id} of type ${job.name} completed successfully.`);
+    // console.log(`Job ${job.id} of type ${job.name} completed successfully.`);
   });
 
   worker.on('failed', (job, err) => {
-    console.error(`Job ${job?.id} of type ${job?.name} failed:`, err);
+    // console.error(`Job ${job?.id} of type ${job?.name} failed:`, err);
   });
 });
 
-console.log('Background workers listening on multiple queues');
+// console.log('Background workers listening on multiple queues');

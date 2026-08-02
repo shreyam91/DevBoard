@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@clerk/nextjs/server';
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import { prisma } from '@devboard/shared/src/prisma';
 import { jobsQueue } from '@devboard/shared/src/queue';
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -17,16 +18,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const dbAccount = await prisma.account.findFirst({
-      where: { userId: session.user.id, provider: 'github' },
-      select: { access_token: true }
-    });
+    const github_access_token = await getGithubToken(userId);
 
-    if (!dbAccount?.access_token) {
+    if (!github_access_token) {
       return NextResponse.json({ error: 'No GitHub token found' }, { status: 400 });
     }
     
-    const github_access_token = dbAccount.access_token;
+    
 
     // 1. Fetch Exact Repo Details from GitHub
     const repoRes = await fetch(`https://api.github.com/repositories/${github_repo_id}`, {
@@ -92,7 +90,7 @@ export async function POST(req: NextRequest) {
         health_status: 'checking'
       },
       create: {
-        user_id: session.user.id,
+        user_id: userId,
         github_repo_id,
         name: exactName,
         full_name: exactFullName,

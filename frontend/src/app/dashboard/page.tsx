@@ -1,19 +1,19 @@
 import Link from "next/link";
-import { LogOut } from "lucide-react";
-import { auth, signOut } from "@/auth";
+import { auth } from "@clerk/nextjs/server";
+import { UserButton } from "@clerk/nextjs";
 import { prisma } from "@devboard/shared/src/prisma";
 import { ConnectButton } from "@/components/ConnectButton";
 import { redirect } from "next/navigation";
 import RepoGridClient from "./RepoGridClient";
 
 export default async function DashboardRootPage() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/login");
+  const { userId } = await auth();
+    if (!userId) {
+    redirect("/sign-in");
   }
 
   const repos = await prisma.repo.findMany({
-    where: { user_id: session.user.id },
+    where: { user_id: userId },
     orderBy: { connected_at: 'desc' }
   });
   return (
@@ -29,16 +29,7 @@ export default async function DashboardRootPage() {
 
         <div className="flex items-center gap-4">
           <Link href="/docs" className="text-[13px] font-medium text-slate-500 hover:text-slate-900 transition-colors">Documentation</Link>
-          <div className="w-px h-4 bg-slate-200"></div>
-          <form action={async () => {
-            "use server";
-            await signOut({ redirectTo: "/login" });
-          }}>
-            <button type="submit" className="flex items-center gap-2 text-[13px] font-medium text-slate-500 hover:text-accent-red transition-colors">
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
-          </form>
+          <UserButton />
         </div>
       </header>
 

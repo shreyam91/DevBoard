@@ -1,5 +1,7 @@
 'use server';
 
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
+
 import { prisma } from '@devboard/shared/src/prisma';
 import { revalidatePath } from 'next/cache';
 import { generateArchitectureDraft } from '@devboard/shared/src/llm/draftArchitecturePipeline';
@@ -90,17 +92,14 @@ export async function approveAndCommitArchitecture(
   const repo = await prisma.repo.findUnique({ where: { id: repoId } });
   if (!repo) throw new Error("Repository not found");
 
-  const dbAccount = await prisma.account.findFirst({
-    where: { userId: repo.user_id, provider: 'github' },
-    select: { access_token: true }
-  });
+  const github_access_token = await getGithubToken(repo.user_id);
 
-  if (!dbAccount?.access_token) throw new Error("Unauthorized: GitHub token missing");
+  if (!github_access_token) throw new Error("Unauthorized: GitHub token missing");
 
   await commitDraftPipeline(
     repoId,
     jobId,
-    dbAccount.access_token,
+    github_access_token,
     markdown,
     decisions
   );

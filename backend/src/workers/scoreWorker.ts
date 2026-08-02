@@ -1,3 +1,4 @@
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import { Job } from 'bullmq';
 import { prisma } from '@devboard/shared/src/prisma';
 import OpenAI from 'openai';

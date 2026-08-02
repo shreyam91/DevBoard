@@ -1,3 +1,4 @@
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import { Job } from 'bullmq';
 import { prisma } from '@devboard/shared/src/prisma';
 import { extractArchaeologyContext } from '@devboard/shared/src/github/extractContext';
@@ -17,7 +18,7 @@ export async function processArchaeologyJob(job: Job) {
       throw new Error('Repository not found');
     }
 
-    const token = repo.user.github_access_token || repo.user.accounts.find(a => a.provider === 'github')?.access_token;
+    const token = await getGithubToken(repo.user_id);
     if (!token) {
       throw new Error('GitHub token not found');
     }

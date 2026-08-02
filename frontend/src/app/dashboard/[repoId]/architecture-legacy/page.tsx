@@ -1,6 +1,6 @@
 import React from 'react';
 import { prisma } from '@devboard/shared/src/prisma';
-import { auth } from '@/auth';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { notFound, redirect } from 'next/navigation';
 import ArchitectureClient from './ArchitectureClient';
 
@@ -9,8 +9,8 @@ export const metadata = {
 };
 
 export default async function ArchitecturePage({ params }: { params: { repoId: string } }) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const { userId } = await auth();
+    if (!userId) {
     redirect('/api/auth/signin');
   }
 
@@ -18,7 +18,7 @@ export default async function ArchitecturePage({ params }: { params: { repoId: s
 
   // Verify access
   const repo = await prisma.repo.findFirst({
-    where: { id: repoId, user_id: session.user.id }
+    where: { id: repoId, user_id: userId }
   });
 
   if (!repo) {
