@@ -77,7 +77,7 @@ export async function commitDraftPipeline(
           repo_id: repoId,
           title: dec.title,
           rationale: dec.rationale,
-          category: finalCategory,
+          category: finalCategory as any,
           source: dec.source || 'archaeology',
           confirmed_by_user: true,
         }

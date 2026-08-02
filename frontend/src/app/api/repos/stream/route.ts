@@ -1,16 +1,17 @@
 export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@clerk/nextjs/server';
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import { prisma } from '@devboard/shared/src/prisma';
 
 export async function GET(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const { userId } = await auth();
+    if (!userId) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
   
-  const userId = session.user.id;
+
 
   const responseStream = new TransformStream();
   const writer = responseStream.writable.getWriter();

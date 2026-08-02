@@ -50,13 +50,13 @@ export default function MarketingNavbar({ isSignedIn }: { isSignedIn: boolean })
           ) : (
             <>
               <Link
-                href="/login"
-                className="text-[14px] font-medium text-slate-600 hover:text-slate-900"
+                href="/sign-in"
+                className="hidden md:inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-slate-700 hover:text-slate-900 transition-colors"
               >
-                Sign in
+                Sign In
               </Link>
-              <Link
-                href="/login"
+              <Link 
+                href="/sign-in"
                 className="flex items-center justify-center rounded-md bg-black px-4 py-2 text-[14px] font-medium text-white transition-transform hover:scale-[1.02] shadow-sm"
               >
                 Get started free
@@ -97,14 +97,14 @@ export default function MarketingNavbar({ isSignedIn }: { isSignedIn: boolean })
           ) : (
             <div className="flex flex-col gap-3">
               <Link
-                href="/login"
-                className="flex items-center justify-center rounded-md border border-slate-200 bg-white py-2.5 text-[15px] font-medium text-slate-700"
+                href="/sign-in"
+                className="block px-3 py-2 text-base font-medium text-slate-700 hover:text-accent-blue hover:bg-slate-50 rounded-md transition-colors"
                 onClick={() => setIsOpen(false)}
               >
-                Sign in
+                Sign In
               </Link>
-              <Link
-                href="/login"
+              <Link 
+                href="/sign-in"
                 className="flex items-center justify-center rounded-md bg-black py-2.5 text-[15px] font-medium text-white"
                 onClick={() => setIsOpen(false)}
               >

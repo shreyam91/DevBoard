@@ -17,7 +17,7 @@ export default function ArchitectureReview({
   draftMarkdown: string;
   draftDecisions: any[];
 }) {
-  const [markdown, setMarkdown] = useState(draftMarkdown);
+  const markdownRef = React.useRef(draftMarkdown);
   const [decisions, setDecisions] = useState(draftDecisions || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingDecision, setEditingDecision] = useState<number | null>(null);
@@ -26,7 +26,7 @@ export default function ArchitectureReview({
   const handleApprove = async () => {
     setIsSubmitting(true);
     try {
-      await approveAndCommitArchitecture(repoId, jobId, markdown, decisions);
+      await approveAndCommitArchitecture(repoId, jobId, markdownRef.current, decisions);
       router.push(`/dashboard/${repoId}`);
     } catch (error) {
       console.error(error);
@@ -77,8 +77,8 @@ export default function ArchitectureReview({
             <h2 className="font-medium text-gray-700 text-sm">ARCHITECTURE.md</h2>
           </div>
           <textarea
-            value={markdown}
-            onChange={(e) => setMarkdown(e.target.value)}
+            defaultValue={draftMarkdown}
+            onChange={(e) => { markdownRef.current = e.target.value; }}
             className="flex-1 w-full p-4 resize-none outline-none font-mono text-sm text-gray-800 bg-transparent"
           />
         </div>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@clerk/nextjs/server';
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import { prisma } from '@devboard/shared/src/prisma';
 import { jobsQueue } from '@devboard/shared/src/queue';
 
@@ -8,8 +9,8 @@ export async function POST(
   { params }: { params: { repoId: string } }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -19,23 +20,20 @@ export async function POST(
     }
 
     const repo = await prisma.repo.findUnique({
-      where: { id: repoId, user_id: session.user.id }
+      where: { id: repoId, user_id: userId }
     });
 
     if (!repo) {
       return NextResponse.json({ error: 'Repository not found' }, { status: 404 });
     }
 
-    const dbAccount = await prisma.account.findFirst({
-      where: { userId: session.user.id, provider: 'github' },
-      select: { access_token: true }
-    });
+    const github_access_token = await getGithubToken(userId);
 
-    if (!dbAccount?.access_token) {
+    if (!github_access_token) {
       return NextResponse.json({ error: 'No GitHub token found' }, { status: 401 });
     }
 
-    const token = dbAccount.access_token;
+    const token = github_access_token;
     const [owner, name] = repo.full_name.split('/');
 
     // 1. Fetch Contributors (up to 100)
@@ -147,7 +145,7 @@ export async function POST(
     if (!repo.is_new_repo) {
       await jobsQueue.add('archaeology', {
         repoId: repo.id,
-        full_name: repo.github_full_name
+        full_name: repo.full_name
       });
     }
 
@@ -156,10 +154,10 @@ export async function POST(
       repoInfo: {
         owner,
         name,
-        visibility: repo.is_private ? 'Private' : 'Public',
+        visibility: 'Public', // Default as we don't store it
         defaultBranch: repo.default_branch,
-        createdDate: new Date(repo.created_at).toLocaleDateString(),
-        lastUpdated: new Date(repo.updated_at).toLocaleDateString(),
+        createdDate: new Date(repo.connected_at).toLocaleDateString(),
+        lastUpdated: new Date(repo.last_activity_at || repo.connected_at).toLocaleDateString(),
         size: repo.health_repo_size || 0,
         age: 'Active',
         language: repo.health_language || 'Unknown'

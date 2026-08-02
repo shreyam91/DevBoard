@@ -19,7 +19,7 @@ import ELK from 'elkjs/lib/elk.bundled.js';
 import { enterpriseNodeTypes } from './EnterpriseNodes';
 import { enterpriseEdgeTypes } from './EnterpriseEdges';
 import { generateEnterpriseData } from './EnterpriseData';
-import { Loader2, Search, X } from 'lucide-react';
+import { Loader2, Search, X, FileCode } from 'lucide-react';
 
 const elk = new ELK();
 
@@ -86,14 +86,14 @@ const getElkLayoutedElements = async (nodes: any[], edges: any[], options: any =
     });
   };
   
-  processLayoutedNodes(layoutedGraph.children);
+  processLayoutedNodes(layoutedGraph.children || []);
   
   return { nodes: layoutedNodes, edges };
 };
 
 export function EnterpriseArchitectureInner() {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<any>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<any>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedNode, setSelectedNode] = useState<any>(null);
 

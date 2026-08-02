@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@devboard/shared/src/prisma';
-import { auth } from '@/auth';
+import { auth } from '@clerk/nextjs/server';
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import { architectureUpdateQueue } from '@devboard/shared/src/queue';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { repoId: string } }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const { userId } = await auth();
+    if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -16,7 +17,7 @@ export async function GET(
 
   // Verify access
   const repo = await prisma.repo.findFirst({
-    where: { id: repoId, user_id: session.user.id }
+    where: { id: repoId, user_id: userId }
   });
 
   if (!repo) {
@@ -53,14 +54,14 @@ export async function POST(
   request: NextRequest,
   { params }: { params: { repoId: string } }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const { userId } = await auth();
+    if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const { repoId } = params;
   const repo = await prisma.repo.findFirst({
-    where: { id: repoId, user_id: session.user.id }
+    where: { id: repoId, user_id: userId }
   });
 
   if (!repo) {

@@ -10,20 +10,24 @@ export const metadata: Metadata = {
   description: "Architectural decision intelligence platform",
 };
 
+import { ClerkProvider } from '@clerk/nextjs';
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
-      </head>
-      <body className={`${inter.className} antialiased bg-background text-[14px] text-foreground selection:bg-accent-blue/20`}>
-        {children}
-        <Toaster position="bottom-right" />
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <head>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" />
+        </head>
+        <body className={`${inter.className} antialiased bg-background text-[14px] text-foreground selection:bg-accent-blue/20`}>
+          {children}
+          <Toaster position="bottom-right" />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

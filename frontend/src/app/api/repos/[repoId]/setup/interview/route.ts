@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@clerk/nextjs/server';
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import { prisma } from '@devboard/shared/src/prisma';
 import OpenAI from 'openai';
 
@@ -8,8 +9,8 @@ export async function POST(
   { params }: { params: { repoId: string } }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -18,7 +19,7 @@ export async function POST(
     const { answers } = body;
 
     const repo = await prisma.repo.findUnique({
-      where: { id: repoId, user_id: session.user.id }
+      where: { id: repoId, user_id: userId }
     });
 
     if (!repo) {

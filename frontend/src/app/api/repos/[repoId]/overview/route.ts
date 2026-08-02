@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@devboard/shared/src/prisma';
-import { auth } from '@/auth';
+import { auth } from '@clerk/nextjs/server';
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { repoId: string } }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const { userId } = await auth();
+    if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -15,7 +16,7 @@ export async function GET(
 
   // Verify access
   const repo = await prisma.repo.findFirst({
-    where: { id: repoId, user_id: session.user.id }
+    where: { id: repoId, user_id: userId }
   });
 
   if (!repo) {

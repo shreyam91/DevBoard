@@ -1,29 +1,26 @@
 import { redirect } from 'next/navigation';
-import { auth } from '@/auth';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '@devboard/shared/src/prisma';
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import RepoList, { GitHubRepo } from './RepoList';
 
 export default async function OnboardingPage() {
-  const session = await auth();
-  
-  if (!session?.user?.id) {
-    redirect('/api/auth/signin');
+  const { userId } = await auth();
+    if (!userId) {
+    redirect('/sign-in');
   }
 
-  const dbUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { github_access_token: true }
-  });
+  const token = await getGithubToken(userId);
 
-  if (!dbUser?.github_access_token) {
+  if (!token) {
     // Edge case: if token is missing, they need to log in again
-    redirect('/api/auth/signin');
+    redirect('/sign-in');
   }
 
   // Fetch repos from GitHub
   const res = await fetch('https://api.github.com/user/repos?sort=updated&per_page=100', {
     headers: {
-      Authorization: `Bearer ${dbUser.github_access_token}`,
+      Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github.v3+json',
     },
     next: { revalidate: 0 } // don't cache

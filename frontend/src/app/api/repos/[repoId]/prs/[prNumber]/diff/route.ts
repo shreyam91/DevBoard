@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@clerk/nextjs/server';
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 import { prisma } from '@devboard/shared/src/prisma';
 import parseDiff from 'parse-diff';
 
@@ -8,8 +9,8 @@ export async function GET(
   { params }: { params: { repoId: string; prNumber: string } }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -18,23 +19,20 @@ export async function GET(
     const commitSha = searchParams.get('commit_sha');
     
     const repo = await prisma.repo.findUnique({
-      where: { id: repoId, user_id: session.user.id }
+      where: { id: repoId, user_id: userId }
     });
 
     if (!repo) {
       return NextResponse.json({ error: 'Repository not found' }, { status: 404 });
     }
 
-    const dbAccount = await prisma.account.findFirst({
-      where: { userId: session.user.id, provider: 'github' },
-      select: { access_token: true }
-    });
+    const github_access_token = await getGithubToken(userId);
 
-    if (!dbAccount?.access_token) {
+    if (!github_access_token) {
       return NextResponse.json({ error: 'No GitHub token found' }, { status: 401 });
     }
 
-    const token = dbAccount.access_token;
+    const token = github_access_token;
     const [owner, name] = repo.full_name.split('/');
 
     let fetchUrl = `https://api.github.com/repos/${owner}/${name}/pulls/${prNumber}`;

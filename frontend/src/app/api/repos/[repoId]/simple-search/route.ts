@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@devboard/shared/src/prisma';
+import { getGithubToken } from '@devboard/shared/src/utils/auth';
 
 export async function GET(
   req: NextRequest,
@@ -17,8 +18,7 @@ export async function GET(
     const searchTerm = `%${query}%`;
 
     const repo = await prisma.repo.findUnique({
-      where: { id: repoId },
-      include: { user: true }
+      where: { id: repoId }
     });
 
     // Search Pull Requests
@@ -71,12 +71,14 @@ export async function GET(
 
     // Search Commits directly from GitHub if we have the token
     let githubCommits: any[] = [];
-    if (repo && repo.user?.github_access_token && repo.full_name) {
+    if (repo && repo.full_name) {
       try {
-        const ghUrl = `https://api.github.com/search/commits?q=repo:${repo.full_name}+${encodeURIComponent(query)}`;
-        const ghRes = await fetch(ghUrl, {
-          headers: {
-            Authorization: `Bearer ${repo.user.github_access_token}`,
+        const github_access_token = await getGithubToken(repo.user_id);
+        if (github_access_token) {
+          const ghUrl = `https://api.github.com/search/commits?q=repo:${repo.full_name}+${encodeURIComponent(query)}`;
+          const ghRes = await fetch(ghUrl, {
+            headers: {
+              Authorization: `Bearer ${github_access_token}`,
             Accept: 'application/vnd.github.v3+json'
           }
         });
@@ -90,6 +92,7 @@ export async function GET(
             url: c.html_url,
             date: c.commit.author.date
           }));
+        }
         }
       } catch (err) {
         console.error('Github search error:', err);
