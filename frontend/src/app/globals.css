@@ -2,26 +2,174 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   DevHub design tokens
+   Light-first developer-engineering platform. A few primitive
+   surfaces/borders/muted text so the shell and cards stay
+   visually consistent without hunting Tailwind classes.
+   ============================================================ */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172a;
+
+  --surface: #ffffff;
+  --surface-subtle: #f8fafc;
+  --surface-hover: #f1f5f9;
+
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+
+  --text: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+
+  --accent: #2563eb;
+  --accent-soft: #eff6ff;
+
+  --ok: #16a34a;
+  --warning: #ea580c;
+  --danger: #dc2626;
+
+  --radius: 8px;
+  --radius-sm: 6px;
+
+  --sidebar-w: 240px;
+  --topbar-h: 56px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0b0f17;
+    --foreground: #e6edf6;
+    --surface: #111722;
+    --surface-subtle: #0f1520;
+    --surface-hover: #182130;
+    --border: #232e3f;
+    --border-strong: #334155;
+    --text: #e6edf6;
+    --text-secondary: #b6c2d4;
+    --text-muted: #8a96a8;
+    --text-faint: #5d6b80;
+    --accent: #3b82f6;
+    --accent-soft: #172a4a;
+    --ok: #22c55e;
+    --warning: #f97316;
+    --danger: #ef4444;
   }
+}
+
+html,
+body {
+  height: 100%;
 }
 
 body {
-  color: var(--foreground);
+  color: var(--text);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color-scheme: light dark;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+/* Slightly tighter type rhythm for a dense engineering UI. */
+h1, h2, h3 { letter-spacing: -0.01em; }
+
+/* Scrollbars kept subtle. */
+* { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+*::-webkit-scrollbar-track { background: transparent; }
+
+/* Selection matches the brand accent. */
+::selection { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+
+/* ============================================================
+   Component primitives (Tailwind-composed)
+   ============================================================ */
+@layer components {
+  .card {
+    @apply rounded-lg border;
+    background: var(--surface);
+    border-color: var(--border);
   }
+  .card-pad { @apply p-5; }
+  .card-hover {
+    transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+  }
+  .card-hover:hover {
+    border-color: var(--border-strong);
+    box-shadow: 0 1px 2px rgba(15,23,42,.05), 0 8px 24px -12px rgba(15,23,42,.15);
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md text-[13px] font-medium transition-colors;
+    height: 34px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+  }
+  .btn-sm { height: 28px; padding: 0 10px; font-size: 12px; }
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-secondary { background: var(--surface); color: var(--text-secondary); }
+  .btn-secondary:hover { background: var(--surface-hover); border-color: var(--border-strong); }
+  .btn-ghost { background: transparent; border-color: transparent; color: var(--text-secondary); }
+  .btn-ghost:hover { background: var(--surface-hover); color: var(--text); }
+  .btn-danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full text-[11px] font-semibold;
+    padding: 2px 8px;
+    border: 1px solid;
+  }
+
+  .input {
+    @apply rounded-md text-[13px];
+    height: 34px;
+    padding: 0 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+  .input::placeholder { color: var(--text-faint); }
+
+  .table-th {
+    @apply text-left text-[11px] uppercase tracking-wider font-semibold;
+    color: var(--text-faint);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .table-td { @apply px-3 py-2.5; border-bottom: 1px solid var(--border); }
+
+  .mono { font-family: Menlo, Monaco, "Courier New", monospace; }
+
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: var(--surface-hover);
+    border-radius: 6px;
+  }
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+  @keyframes shimmer { 100% { transform: translateX(100%); } }
+
+  .label {
+    @apply text-[11px] uppercase tracking-wider font-semibold;
+    color: var(--text-faint);
+  }
+  .stat-value { color: var(--text); font-variant-numeric: tabular-nums; }
 }

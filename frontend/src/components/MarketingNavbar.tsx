@@ -11,10 +11,10 @@ export default function MarketingNavbar({ isSignedIn }: { isSignedIn: boolean })
     <nav className="sticky top-0 z-50 flex h-[60px] items-center justify-between border-b border-slate-200 bg-white/95 backdrop-blur-sm px-6 md:px-12">
       {/* Left: Logo */}
       <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-black">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-900 shadow-sm">
           <GitBranch className="w-4 h-4 text-white" />
         </div>
-        <span className="text-[15px] font-semibold text-slate-900 tracking-tight">DevBoard</span>
+        <span className="text-[15px] font-semibold text-slate-900 tracking-tight">DevHub</span>
       </Link>
 
       {/* Center: Links (Desktop) */}
@@ -36,10 +36,6 @@ export default function MarketingNavbar({ isSignedIn }: { isSignedIn: boolean })
       {/* Right: CTA / Hamburger */}
       <div className="flex items-center gap-4">
         <div className="hidden md:flex items-center gap-4">
-          {/* <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-[14px] font-medium text-slate-500 hover:text-slate-900 transition-colors">
-            GitHub
-          </a> */}
-          {/* <div className="w-[1px] h-4 bg-slate-200"></div> */}
           {isSignedIn ? (
             <Link
               href="/dashboard"
@@ -55,11 +51,11 @@ export default function MarketingNavbar({ isSignedIn }: { isSignedIn: boolean })
               >
                 Sign In
               </Link>
-              <Link 
-                href="/sign-in"
-                className="flex items-center justify-center rounded-md bg-black px-4 py-2 text-[14px] font-medium text-white transition-transform hover:scale-[1.02] shadow-sm"
+              <Link
+                href="/dashboard"
+                className="flex items-center justify-center rounded-md bg-slate-900 px-4 py-2 text-[14px] font-medium text-white transition-transform hover:scale-[1.02] shadow-sm"
               >
-                Get started free
+                Open DevHub app
               </Link>
             </>
           )}

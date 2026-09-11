@@ -3,11 +3,11 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from 'react-hot-toast';
 
-const inter = Inter({ subsets: ["latin"], weight: ["400", "500"] });
+const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 
 export const metadata: Metadata = {
-  title: "DevBoard - Architecture Intelligence",
-  description: "Architectural decision intelligence platform",
+  title: "DevHub - AI-powered engineering intelligence",
+  description: "DevHub understands your GitHub project, reviews your code, tracks architecture and decisions, and keeps your engineering documentation synchronized with the software.",
 };
 
 import { ClerkProvider } from '@clerk/nextjs';

@@ -4,7 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { PRHeader } from '@/components/pr-explorer/PRHeader';
 import { CommitExplorer } from '@/components/pr-explorer/CommitExplorer';
 import { InteractiveDiffViewer } from '@/components/pr-explorer/InteractiveDiffViewer';
-import { AIInsightsPanel } from '@/components/pr-explorer/AIInsightsPanel';
+import { AIReviewPanel } from '@/components/pr-explorer/AIReviewPanel';
 import { AlertCircle } from 'lucide-react';
 
 export default function PRPage({ params }: { params: { repoId: string; prNumber: string } }) {
@@ -100,9 +100,9 @@ export default function PRPage({ params }: { params: { repoId: string; prNumber:
           isLoading={isLoadingDiff} 
         />
         
-        <AIInsightsPanel 
-          repoId={params.repoId} 
-          prNumber={params.prNumber} 
+        <AIReviewPanel
+          repoId={params.repoId}
+          prNumber={params.prNumber}
         />
       </div>
     </div>

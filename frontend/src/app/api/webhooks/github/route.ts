@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { prisma } from '@devboard/shared/src/prisma';
-import { prAnalysisQueue } from '@devboard/shared/src/queue';
+import { prAnalysisQueue, reviewQueue } from '@devboard/shared/src/queue';
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     if (event === 'pull_request') {
       const { action, pull_request, repository } = payload;
-      
+
       // Update repo_id in webhookEvent if we can
       const repo = await prisma.repo.findUnique({
         where: { github_repo_id: repository.id.toString() }
@@ -49,6 +49,62 @@ export async function POST(req: NextRequest) {
           where: { id: webhookEvent.id },
           data: { repo_id: repo.id }
         });
+
+        // AI code review triggers on opened / synchronized / reopened PRs.
+        if (action === 'opened' || action === 'synchronize' || action === 'reopened') {
+          const headSha: string | null = pull_request?.head?.sha || null;
+
+          // Find-or-create the PR record so a review can attach to it.
+          const prRecord = await prisma.pullRequest.findFirst({
+            where: { repo_id: repo.id, pr_number: pull_request.number }
+          });
+
+          if (prRecord) {
+            await prisma.pullRequest.update({
+              where: { id: prRecord.id },
+              data: {
+                title: pull_request.title,
+                description: pull_request.body || '',
+                author: pull_request.user?.login || prRecord.author,
+                head_sha: headSha,
+                base_branch: pull_request.base?.ref || prRecord.base_branch,
+                head_branch: pull_request.head?.ref || prRecord.head_branch,
+              }
+            });
+          } else {
+            await prisma.pullRequest.create({
+              data: {
+                repo_id: repo.id,
+                pr_number: pull_request.number,
+                title: pull_request.title,
+                description: pull_request.body || '',
+                url: pull_request.html_url,
+                author: pull_request.user?.login || '',
+                head_sha: headSha,
+                base_branch: pull_request.base?.ref || null,
+                head_branch: pull_request.head?.ref || null,
+              }
+            });
+          }
+
+          await reviewQueue.add('pr-review', {
+            repoId: repo.id,
+            repoFullName: repository.full_name,
+            prNumber: pull_request.number,
+            prTitle: pull_request.title,
+            prUrl: pull_request.html_url,
+            headSha,
+          }, {
+            attempts: 3,
+            backoff: { type: 'exponential', delay: 2000 }
+          });
+
+          await prisma.webhookEvent.update({
+            where: { id: webhookEvent.id },
+            data: { processed: true }
+          });
+          return NextResponse.json({ success: true, message: 'AI review job enqueued' });
+        }
 
         // We only care about merged PRs for architecture evaluation
         if (action === 'closed' && pull_request.merged === true) {

@@ -1,28 +1,26 @@
-"use client";
-
 import MarketingNavbar from "@/components/MarketingNavbar";
 import MarketingFooter from "@/components/MarketingFooter";
-import { Background } from "@/components/landing/Background";
-import { Hero } from "@/components/landing/Hero";
-import { Problem } from "@/components/landing/Problem";
-import { SolutionFeatures } from "@/components/landing/Features";
-import { Comparison } from "@/components/landing/Comparison";
-import { FinalCTA } from "@/components/landing/FinalCTA";
+import Hero from "@/components/landing/Hero";
+import GitHubSection from "@/components/landing/GitHubSection";
+import FromContext from "@/components/landing/FromContext";
+import AIReviewSection from "@/components/landing/AIReviewSection";
+import LivingDocs from "@/components/landing/LivingDocs";
+import TechStrip from "@/components/landing/TechStrip";
+import FinalCTA from "@/components/landing/FinalCTA";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen selection:bg-accent-blue/20 text-slate-900 overflow-hidden relative">
-      <Background />
+    <div className="min-h-screen bg-white text-slate-900 antialiased">
       <MarketingNavbar isSignedIn={false} />
-      
-      <main className="relative z-10 flex flex-col pt-10">
+      <main>
         <Hero />
-        <Problem />
-        <SolutionFeatures />
-        <Comparison />
+        <GitHubSection />
+        <FromContext />
+        <AIReviewSection />
+        <LivingDocs />
+        <TechStrip />
         <FinalCTA />
       </main>
-
       <MarketingFooter />
     </div>
   );

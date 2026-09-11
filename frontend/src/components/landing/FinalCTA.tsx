@@ -1,38 +1,42 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, GitMerge } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import Reveal from "./Reveal";
 
-export function FinalCTA() {
+export default function FinalCTA() {
   return (
-    <section className="relative px-6 py-10 md:px-12 max-w-[1000px] mx-auto text-center overflow-hidden">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        className="relative z-10 flex flex-col items-center"
-      >
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-slate-100 mb-8">
-          <GitMerge className="w-6 h-6 text-slate-900" />
-        </div>
-        
-        <h2 className="text-[40px] md:text-[56px] font-bold text-slate-900 mb-6 tracking-tight leading-[1.1]">
-          Stop repeating yourself in PRs.
-        </h2>
-        
-        <p className="text-[16px] md:text-[18px] font-medium text-slate-500 max-w-xl mx-auto mb-10">
-          Connect your repository today and let DevBoard auto-document your architecture.
-        </p>
-
-        <div className="flex justify-center relative">
-          <Link href="/sign-in" className="group flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-black text-white font-medium hover:scale-[1.02] active:scale-[0.98] transition-all shadow-md">
-            <span className="text-[15px]">Connect GitHub</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-        </div>
-      </motion.div>
+    <section className="px-6 py-24 md:px-12">
+      <div className="mx-auto max-w-[1200px]">
+        <Reveal>
+          <div className="rounded-2xl border border-slate-200 bg-[#0f141c] p-10 text-white md:p-16">
+            <div className="mx-auto max-w-2xl text-center">
+              <h2 className="text-[34px] font-bold leading-[1.05] tracking-[-0.02em] md:text-[48px]">
+                Bring your repository into context.
+              </h2>
+              <p className="mx-auto mt-5 max-w-[48ch] text-[17px] leading-relaxed text-slate-300">
+                Connect a GitHub project and see your code, architecture, and engineering knowledge in one place.
+              </p>
+              <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                <Link
+                  href="/sign-in"
+                  className="group inline-flex items-center justify-center gap-2 rounded-md bg-white px-6 py-3 text-[15px] font-semibold text-slate-900 transition-transform hover:scale-[1.02]"
+                >
+                  Connect GitHub
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                </Link>
+                <Link
+                  href="/#context"
+                  className="inline-flex items-center justify-center gap-2 rounded-md border border-white/20 px-6 py-3 text-[15px] font-semibold text-white transition-colors hover:bg-white/5"
+                >
+                  Explore DevHub
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
     </section>
   );
 }

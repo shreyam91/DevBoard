@@ -1,14 +1,14 @@
-import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
-import { UserButton } from "@clerk/nextjs";
 import { prisma } from "@devboard/shared/src/prisma";
-import { ConnectButton } from "@/components/ConnectButton";
 import { redirect } from "next/navigation";
+import { GitFork, GitCommit, Boxes } from "lucide-react";
+import { PageHeader, StatCard } from "@/components/ui/primitives";
+import { ConnectButton } from "@/components/ConnectButton";
 import RepoGridClient from "./RepoGridClient";
 
 export default async function DashboardRootPage() {
   const { userId } = await auth();
-    if (!userId) {
+  if (!userId) {
     redirect("/sign-in");
   }
 
@@ -16,41 +16,27 @@ export default async function DashboardRootPage() {
     where: { user_id: userId },
     orderBy: { connected_at: 'desc' }
   });
+
+  const totalCommits = repos.reduce((s, r) => s + (r.commit_count ?? 0), 0);
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900 selection:bg-accent-blue/20">
-      {/* Topbar */}
-      <header className="h-[60px] bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 z-10">
-        <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <div className="w-[28px] h-[28px] bg-accent-blue rounded flex items-center justify-center shrink-0">
-            <i className="ti ti-topology-star-3 text-white text-[16px]"></i>
-          </div>
-          <span className="text-[15px] font-semibold text-slate-900">DevBoard</span>
-        </Link>
+    <div className="space-y-5">
+      <PageHeader
+        eyebrow="Workspace"
+        title="Connected repositories"
+        description="Every GitHub repository synced with DevHub. Open one to review its architecture, decisions, and detected conflicts."
+        actions={<ConnectButton />}
+      />
 
-        <div className="flex items-center gap-4">
-          <Link href="/docs" className="text-[13px] font-medium text-slate-500 hover:text-slate-900 transition-colors">Documentation</Link>
-          <UserButton />
-        </div>
-      </header>
+      {/* Real-data stat band */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard label="Repositories" value={String(repos.length)} icon={<GitFork className="h-4 w-4" />} tone="muted" hint="synced with DevHub" />
+        <StatCard label="Commits tracked" value={totalCommits.toLocaleString()} icon={<GitCommit className="h-4 w-4" />} tone="ok" hint="across connected repos" />
+        <StatCard label="Architecture" value="Live" icon={<Boxes className="h-4 w-4" />} tone="muted" hint="reconstructed per repository" />
+      </div>
 
-      {/* Main Content */}
-      <main className="flex-1 max-w-[1000px] w-full mx-auto px-6 py-12">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-  <h1 className="text-[30px] font-bold tracking-tight text-slate-900">
-    Connected Repositories
-  </h1>
-
-  <p className="mt-2 max-w-xl text-[15px] leading-relaxed text-slate-500">
-    These repositories are synced with DevBoard. Open any repository to review its architecture, decision records, and detected conflicts.
-  </p>
-</div>
-          <ConnectButton />
-        </div>
-
-        {/* Repo Grid */}
-        <RepoGridClient initialRepos={repos} />
-      </main>
+      {/* Repo grid (live SSE updates preserved) */}
+      <RepoGridClient initialRepos={repos} />
     </div>
   );
 }
