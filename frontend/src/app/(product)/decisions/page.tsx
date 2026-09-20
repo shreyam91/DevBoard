@@ -7,6 +7,7 @@ import { cn } from '@/utils/cn';
 import { PageHeader } from '@/components/ui/primitives';
 import { getADRs, getDocs, findPR, demoMeta } from '@/data';
 import { ADR } from '@/data';
+import AskDevHubButton from '@/components/AskDevHubButton';
 
 function AdrStatusBadge({ status }: { status: ADR['status'] }) {
   const map: Record<ADR['status'], { cls: string; dot: string; label: string }> = {
@@ -73,6 +74,13 @@ export default function DecisionsPage() {
             <div className="flex flex-wrap items-center gap-2">
               <span className="mono text-[13px] font-semibold text-[var(--text-faint)]">{rel.adrNumber}</span>
               <AdrStatusBadge status={rel.status} />
+              <AskDevHubButton
+                className="ml-auto"
+                question={`Explain ${rel.adrNumber} (${rel.title}): what it decides and why`}
+                context={{ adr: rel.adrNumber }}
+                label="Ask about this ADR"
+                variant="secondary"
+              />
             </div>
             <h2 className="mt-2 text-[18px] font-bold tracking-tight text-[var(--text)]">{rel.title}</h2>
 

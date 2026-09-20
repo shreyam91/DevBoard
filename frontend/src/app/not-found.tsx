@@ -73,7 +73,7 @@ export default function NotFound() {
             className="flex flex-wrap items-center gap-4 mb-6"
           >
             <Link 
-              href="/dashboard" 
+              href="/overview" 
               className="flex items-center justify-center gap-2 rounded-lg bg-black px-6 py-3.5 text-[15px] font-medium text-white transition-transform hover:scale-[1.02] shadow-sm"
             >
               <ArrowLeft className="w-4 h-4" />

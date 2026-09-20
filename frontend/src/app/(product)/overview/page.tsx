@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ArrowRight, Activity as ActivityIcon, GitPullRequest, Scale, ArrowUpRight } from 'lucide-react';
 import { StatCard, PageHeader, ActivityItem } from '@/components/ui/primitives';
+import { ConnectButton } from '@/components/ConnectButton';
 import { getProjects, getRepos, getActivity, getFindingCounts, getADRs, getDocs, demoMeta } from '@/data';
 
 function HealthPill({ healthy, needs, critical }: { healthy: number; needs: number; critical: number }) {
@@ -38,7 +39,10 @@ export default function OverviewPage() {
         title="Engineering overview"
         description="What is happening in your projects, reviews, and documentation at a glance."
         actions={
-          <span className="rounded-full border border-[var(--border)] px-2.5 py-1 text-[11px] font-medium text-[var(--text-muted)]">{demoMeta.banner}</span>
+          <div className="flex items-center gap-2 shrink-0">
+            <ConnectButton />
+            <span className="rounded-full border border-[var(--border)] px-2.5 py-1 text-[11px] font-medium text-[var(--text-muted)]">{demoMeta.banner}</span>
+          </div>
         }
       />
 

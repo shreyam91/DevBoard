@@ -7,6 +7,7 @@ import { cn } from '@/utils/cn';
 import { ScoreRing, SeverityBadge, StatusBadge, EmptyState } from '@/components/ui/primitives';
 import { AIReviewPanel } from '@/components/pr-explorer/AIReviewPanel';
 import { findPR, findRepo, getFindings, repoOf } from '@/data';
+import AskDevHubButton from '@/components/AskDevHubButton';
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: <GitPullRequest className="h-3.5 w-3.5" /> },
@@ -66,6 +67,11 @@ export default function PRDetailPage({ params }: { params: { repoId: string; prN
               <span className="text-[11px] text-[var(--text-faint)]">Overall</span>
             </div>
           )}
+          <AskDevHubButton
+            question={`Explain what PR #${prNumber} (${pr?.title ?? ''}) changes and why`}
+            context={{ prNumber }}
+            label="Ask about this PR"
+          />
         </div>
 
         {/* Tabs */}
@@ -133,7 +139,7 @@ export default function PRDetailPage({ params }: { params: { repoId: string; prN
             <div className="card p-5">
               <div className="label">Repository</div>
               <Link href={`/repos/${repo.id}`} className="mt-2 block font-medium text-[var(--accent)] hover:underline">{repo.name}</Link>
-              <Link href={`/dashboard/${repo.id}`} className="mt-1 block text-[12px] text-[var(--text-muted)] hover:text-[var(--text)]">Open full repo workspace →</Link>
+              <Link href={`/repos/${repo.id}`} className="mt-1 block text-[12px] text-[var(--text-muted)] hover:text-[var(--text)]">Open full repo workspace →</Link>
             </div>
           </div>
         </div>
@@ -152,7 +158,7 @@ export default function PRDetailPage({ params }: { params: { repoId: string; prN
         <EmptyState
           title="No changes loaded"
           description="File-level changes for demo PRs are summarized in the header. Connected repositories show an interactive diff viewer."
-          action={<Link href={findRepo(params.repoId) ? `/dashboard/${params.repoId}/pr/${prNumber}` : '/repos'} className="btn btn-primary btn-sm">Open diff viewer</Link>}
+          action={<Link href={findRepo(params.repoId) ? `/repos/${params.repoId}/pr/${prNumber}` : '/repos'} className="btn btn-primary btn-sm">Open diff viewer</Link>}
         />
       )}
       {tab === 'architecture' && (
