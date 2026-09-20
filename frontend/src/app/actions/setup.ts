@@ -61,7 +61,7 @@ export async function submitQuestionnaire(repoId: string) {
     }
   }
 
-  revalidatePath(`/dashboard/${repoId}/setup`);
+  revalidatePath(`/repos/${repoId}/setup`);
   return { success: true };
 }
 
@@ -79,7 +79,7 @@ export async function startArchaeologyJob(repoId: string, full_name: string) {
     data: { initialization_status: 'in_progress' }
   });
   
-  revalidatePath(`/dashboard/${repoId}/setup`);
+  revalidatePath(`/repos/${repoId}/setup`);
   return { success: true };
 }
 
@@ -104,6 +104,6 @@ export async function approveAndCommitArchitecture(
     decisions
   );
 
-  revalidatePath(`/dashboard/${repoId}`);
+  revalidatePath(`/repos/${repoId}`);
   return { success: true };
 }

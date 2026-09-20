@@ -229,9 +229,9 @@ export default function SnapshotPage({ params }: { params: { repoId: string } })
               setIsFinishing(true);
               setTimeout(() => {
                 if (snapshot.is_new_repo) {
-                  router.push(`/dashboard/${repoId}/setup`);
+                  router.push(`/repos/${repoId}/setup`);
                 } else {
-                  router.push(`/dashboard/${repoId}`);
+                  router.push(`/repos/${repoId}`);
                 }
               }, 1500); // 1.5s for the final transition banner
             }

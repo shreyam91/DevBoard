@@ -40,7 +40,7 @@ function QuestionnaireForm() {
 
       if (!res.ok) throw new Error('Failed to submit questionnaire');
       
-      router.push('/dashboard');
+      router.push('/overview');
     } catch (error) {
       console.error(error);
       toast.error('Something went wrong. Please try again.');

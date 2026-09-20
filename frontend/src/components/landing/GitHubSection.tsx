@@ -85,15 +85,20 @@ export default function GitHubSection() {
                 </div>
               </div>
 
-              <div className="mt-4 border-t border-slate-200 pt-4">
-                <Link
-                  href="/sign-in"
-                  className="group inline-flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-black"
-                >
-                  Connect GitHub
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              </div>
+              <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
+  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-slate-400">
+    GitHub → DevHub
+  </span>
+
+  <Link
+    href="/#how-it-works"
+    className="group inline-flex items-center gap-2 text-[13px] font-medium text-slate-700 transition-colors hover:text-slate-950"
+  >
+    How it works
+    <ArrowRight className="h-3.5 w-3.5 text-slate-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-slate-950" />
+  </Link>
+</div>
+
             </div>
           </Reveal>
         </div>

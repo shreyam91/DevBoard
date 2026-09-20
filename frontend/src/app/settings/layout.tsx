@@ -18,7 +18,7 @@ export default function SettingsLayout({
         
         {/* Logo block */}
         <div className="pt-8 pb-6 px-5 border-b border-slate-200/60">
-          <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Link href="/overview" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="w-[32px] h-[32px] bg-accent-blue rounded-lg flex items-center justify-center shrink-0 shadow-sm border border-accent-blue/20">
               <Box className="text-white w-[18px] h-[18px]" />
             </div>
@@ -28,7 +28,7 @@ export default function SettingsLayout({
             </div>
           </Link>
           
-          <Link href="/dashboard" className="mt-6 rounded-lg bg-white border border-slate-200 shadow-sm p-2 flex items-center justify-center gap-2 cursor-pointer hover:border-slate-300 hover:shadow transition-all group">
+          <Link href="/overview" className="mt-6 rounded-lg bg-white border border-slate-200 shadow-sm p-2 flex items-center justify-center gap-2 cursor-pointer hover:border-slate-300 hover:shadow transition-all group">
             <ArrowLeft className="text-slate-400 group-hover:text-slate-600 w-4 h-4 transition-colors shrink-0" />
             <span className="text-slate-700 font-semibold text-[13px]">Back to Dashboard</span>
           </Link>

@@ -14,7 +14,7 @@ const DOCS = [
 
 export default function LivingDocs() {
   return (
-    <section className="border-b border-slate-200/70 px-6 py-20 md:px-12">
+    <section id="documentation" className="border-b border-slate-200/70 px-6 py-20 md:px-12">
       <div className="mx-auto max-w-[1200px]">
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-2">
           {/* Foundation statement */}

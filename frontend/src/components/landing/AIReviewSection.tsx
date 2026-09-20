@@ -5,7 +5,7 @@ import Reveal from "./Reveal";
 
 export default function AIReviewSection() {
   return (
-    <section className="border-b border-slate-200/70 px-6 py-20 md:px-12">
+    <section id="ai-review" className="border-b border-slate-200/70 px-6 py-20 md:px-12">
       <div className="mx-auto max-w-[1200px]">
         <Reveal>
           <div className="max-w-2xl">

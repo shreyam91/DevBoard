@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    return NextResponse.json({ success: true, redirect: `/dashboard/${repoId}` });
+    return NextResponse.json({ success: true, redirect: `/repos/${repoId}` });
   } catch (error: any) {
     console.error('Error generating architecture:', error);
     const errorMessage = error?.message || 'Unknown error';
